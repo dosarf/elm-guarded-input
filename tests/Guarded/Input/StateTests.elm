@@ -11,62 +11,62 @@ import String
 
 validModel : Model Bool
 validModel =
-    Model { parsedInput = Valid True, lastError = Nothing }
+    Model_ { parsedInput = Valid_ True, lastError = Nothing }
 
 
 validMsg : Msg Bool
 validMsg =
-    Valid_ True
+    ValidMsg_ True
 
 
 workInProgressModel : Model Bool
 workInProgressModel =
-    Model { parsedInput = (WorkInProgress "Tru"), lastError = Nothing }
+    Model_ { parsedInput = (WorkInProgress_ "Tru"), lastError = Nothing }
 
 
 workInProgressMsg : Msg Bool
 workInProgressMsg =
-    WorkInProgress_ ( "Tru", "Tru could continue with e" )
+    WorkInProgressMsg_ ( "Tru", "Tru could continue with e" )
 
 
 undefinedModel : Model value
 undefinedModel =
-    Model { parsedInput = Undefined, lastError = Nothing }
+    Model_ { parsedInput = Undefined_, lastError = Nothing }
 
 
 undefinedMsg : Msg value
 undefinedMsg =
-    Undefined_
+    UndefinedMsg_
 
 
 undefinedModelWithError : Model value
 undefinedModelWithError =
-    Model { parsedInput = Undefined, lastError = Just <| LastError "Tre" "Tre is in no way valid boolean value" }
+    Model_ { parsedInput = Undefined_, lastError = Just <| LastError_ "Tre" "Tre is in no way valid boolean value" }
 
 
 invalidMsg : Msg Bool
 invalidMsg =
-    Invalid_ ( "Tre", "Tre is in no way valid boolean value" )
+    InvalidMsg_ ( "Tre", "Tre is in no way valid boolean value" )
 
 
 workInProgressModelWithError : Model Bool
 workInProgressModelWithError =
-    Model { parsedInput = WorkInProgress "Tru", lastError = Just <| LastError "Tre" "Tre is in no way valid boolean value" }
+    Model_ { parsedInput = WorkInProgress_ "Tru", lastError = Just <| LastError_ "Tre" "Tre is in no way valid boolean value" }
 
 
 validModel2 : Model Bool
 validModel2 =
-    Model { parsedInput = Valid False, lastError = Nothing }
+    Model_ { parsedInput = Valid_ False, lastError = Nothing }
 
 
 validMsg2 : Msg Bool
 validMsg2 =
-    Valid_ False
+    ValidMsg_ False
 
 
 validModelWithError : Model Bool
 validModelWithError =
-    Model { parsedInput = Valid True, lastError = Just <| LastError "Tre" "Tre is in no way valid boolean value" }
+    Model_ { parsedInput = Valid_ True, lastError = Just <| LastError_ "Tre" "Tre is in no way valid boolean value" }
 
 
 testSuite : Test
@@ -81,7 +81,7 @@ testSuite =
         , describe "initFor tests"
             [ fuzz int "Model initialized for a given value has that value, and there is no last error" <|
                 \x ->
-                    Model { parsedInput = Valid x, lastError = Nothing }
+                    Model_ { parsedInput = Valid_ x, lastError = Nothing }
                         |> Expect.equal (initFor x)
             ]
         , describe "update tests for undefined models"

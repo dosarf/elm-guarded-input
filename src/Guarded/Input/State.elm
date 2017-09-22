@@ -6,48 +6,48 @@ import Guarded.Input.InternalTypes exposing (..)
 
 init : Model value
 init =
-    Model
-        { parsedInput = Undefined
+    Model_
+        { parsedInput = Undefined_
         , lastError = Nothing
         }
 
 
 initFor : value -> Model value
 initFor value =
-    Model
-        { parsedInput = Valid value
+    Model_
+        { parsedInput = Valid_ value
         , lastError = Nothing
         }
 
 
 update : Msg v -> Model v -> ( Model v, Cmd (Msg v) )
-update message (Model model) =
+update message (Model_ model) =
     case message of
-        Valid_ value ->
-            ( Model
-                { parsedInput = Valid value
+        ValidMsg_ value ->
+            ( Model_
+                { parsedInput = Valid_ value
                 , lastError = Nothing
                 }
             , Cmd.none
             )
 
-        Invalid_ ( input, info ) ->
-            ( Model
+        InvalidMsg_ ( input, info ) ->
+            ( Model_
                 { model
-                    | lastError = Just <| LastError input info
+                    | lastError = Just <| LastError_ input info
                 }
             , Cmd.none
             )
 
-        WorkInProgress_ ( input, info ) ->
-            ( Model
-                { parsedInput = WorkInProgress input
+        WorkInProgressMsg_ ( input, info ) ->
+            ( Model_
+                { parsedInput = WorkInProgress_ input
                 , lastError = Nothing
                 }
             , Cmd.none
             )
 
-        Undefined_ ->
+        UndefinedMsg_ ->
             ( init
             , Cmd.none
             )

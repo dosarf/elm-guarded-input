@@ -9,27 +9,27 @@ import Guarded.Input.Types exposing (..)
 
 validModelNoLastError : Model Int
 validModelNoLastError =
-    fromParsedInput <| Valid 5
+    fromParsedInput <| Valid_ 5
 
 
 validModelWithLastError : Model Int
 validModelWithLastError =
-    fromParsedInputAndLastError (Valid 5) { input = "5a", info = "parse error" }
+    fromParsedInputAndLastError (Valid_ 5) { input = "5a", info = "parse error" }
 
 
 workInProgress : Model Int
 workInProgress =
-    fromParsedInput <| WorkInProgress "-"
+    fromParsedInput <| WorkInProgress_ "-"
 
 
 undefinedNoLastError : Model Int
 undefinedNoLastError =
-    fromParsedInput Undefined
+    fromParsedInput Undefined_
 
 
 undefinedWithLastError : Model Int
 undefinedWithLastError =
-    fromParsedInputAndLastError Undefined { input = "a", info = "parse error" }
+    fromParsedInputAndLastError Undefined_ { input = "a", info = "parse error" }
 
 
 testSuite : Test

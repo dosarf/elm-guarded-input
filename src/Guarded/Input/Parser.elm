@@ -43,7 +43,7 @@ digitParser =
 parser : (String -> Maybe String) -> (String -> Result String value) -> String -> Msg value
 parser guard convert input =
     if input == "" then
-        Undefined_
+        UndefinedMsg_
     else
         let
             rejectionResult =
@@ -54,13 +54,13 @@ parser guard convert input =
         in
             case ( rejectionResult, conversionResult ) of
                 ( Just error, _ ) ->
-                    Invalid_ ( input, error )
+                    InvalidMsg_ ( input, error )
 
                 ( Nothing, Err error ) ->
-                    WorkInProgress_ ( input, error )
+                    WorkInProgressMsg_ ( input, error )
 
                 ( Nothing, Ok v ) ->
-                    Valid_ v
+                    ValidMsg_ v
 
 
 

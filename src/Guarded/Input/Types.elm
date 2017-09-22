@@ -1,32 +1,26 @@
-module Guarded.Input.Types exposing (Model(..), Msg(..), inputStringMaybe, inputString, lastError, toResult, fromParsedInput, fromParsedInputAndLastError)
+module Guarded.Input.Types exposing (Model, Msg, inputStringMaybe, inputString, lastError, toResult, fromParsedInput, fromParsedInputAndLastError)
 
 import Guarded.Input.InternalTypes exposing (..)
 
 
-type Model value
-    = Model
-        { parsedInput : ParsedInput value
-        , lastError : Maybe LastError
-        }
+type alias Model value =
+    Model_ value
 
 
-type Msg value
-    = Valid_ value
-    | Invalid_ ( Input, Info )
-    | WorkInProgress_ ( Input, Info )
-    | Undefined_
+type alias Msg value =
+    Msg_ value
 
 
 inputStringMaybe : Model value -> Maybe String
-inputStringMaybe (Model model) =
+inputStringMaybe (Model_ model) =
     case model.parsedInput of
-        Valid value ->
+        Valid_ value ->
             Just <| toString value
 
-        WorkInProgress acceptedInputSoFar ->
+        WorkInProgress_ acceptedInputSoFar ->
             Just acceptedInputSoFar
 
-        Undefined ->
+        Undefined_ ->
             Nothing
 
 
@@ -36,7 +30,7 @@ inputString model =
 
 
 lastError : Model value -> Maybe String
-lastError (Model model) =
+lastError (Model_ model) =
     case model.lastError of
         Just { input, info } ->
             Just info
@@ -46,23 +40,23 @@ lastError (Model model) =
 
 
 toResult : Model value -> Result String value
-toResult (Model model) =
+toResult (Model_ model) =
     case model.parsedInput of
-        Valid value ->
+        Valid_ value ->
             Ok value
 
-        WorkInProgress input ->
+        WorkInProgress_ input ->
             "'" ++ input ++ "' is work in progress" |> Err
 
-        Undefined ->
+        Undefined_ ->
             Err "No value is defined"
 
 
-fromParsedInput : ParsedInput value -> Model value
+fromParsedInput : ParsedInput_ value -> Model value
 fromParsedInput parsedInput =
-    Model { parsedInput = parsedInput, lastError = Nothing }
+    Model_ { parsedInput = parsedInput, lastError = Nothing }
 
 
-fromParsedInputAndLastError : ParsedInput value -> LastError -> Model value
+fromParsedInputAndLastError : ParsedInput_ value -> LastError_ -> Model value
 fromParsedInputAndLastError parsedInput lastError =
-    Model { parsedInput = parsedInput, lastError = Just lastError }
+    Model_ { parsedInput = parsedInput, lastError = Just lastError }

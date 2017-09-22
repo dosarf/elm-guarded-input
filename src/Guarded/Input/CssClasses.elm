@@ -1,7 +1,7 @@
 module Guarded.Input.CssClasses exposing (..)
 
-import Guarded.Input.Types exposing (Model(..))
-import Guarded.Input.InternalTypes exposing (ParsedInput(..))
+import Guarded.Input.Types exposing (Model)
+import Guarded.Input.InternalTypes exposing (ParsedInput_(..), Model_(..))
 
 
 inputValidClass : String
@@ -40,34 +40,34 @@ defaultClassListForAlert model =
 
 
 selectClassForInput : Model value -> String -> Bool
-selectClassForInput (Model model) class =
+selectClassForInput (Model_ model) class =
     case model.parsedInput of
-        Valid _ ->
+        Valid_ _ ->
             class == inputValidClass
 
-        WorkInProgress _ ->
+        WorkInProgress_ _ ->
             class == inputWorkInProgressClass
 
-        Undefined ->
+        Undefined_ ->
             class == inputUndefinedClass
 
 
 selectClassForAlert : Model value -> String -> Bool
-selectClassForAlert (Model model) class =
+selectClassForAlert (Model_ model) class =
     case model.lastError of
         Just { input, info } ->
             case model.parsedInput of
-                WorkInProgress _ ->
+                WorkInProgress_ _ ->
                     class == inputInvalidClass
 
-                Undefined ->
+                Undefined_ ->
                     class == inputUndefinedClass
 
                 _ ->
                     class == inputInvalidClass
 
         Nothing ->
-            selectClassForInput (Model model) class
+            selectClassForInput (Model_ model) class
 
 
 defaultClasses : List String

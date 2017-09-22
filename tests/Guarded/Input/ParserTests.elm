@@ -219,7 +219,7 @@ parserTestSuite =
         [ describe "intParser tests"
             [ test "Empty string yields undefined message" <|
                 \() ->
-                    Undefined_
+                    UndefinedMsg_
                         |> Expect.equal (intParser "")
             , test "A single minus character yields work-in-progress message" <|
                 \() ->
@@ -227,11 +227,11 @@ parserTestSuite =
                         |> Expect.equal (intParser "-" |> workInProgressMsgInput)
             , fuzz int "A valid integer yields a valid messsage" <|
                 \x ->
-                    Valid_ x
+                    ValidMsg_ x
                         |> Expect.equal (intParser (toString x))
             , test "A 0 yields a valid messsage" <|
                 \() ->
-                    Valid_ 0
+                    ValidMsg_ 0
                         |> Expect.equal (intParser "0")
             , fuzz string "Garbage input yields an invalid message" <|
                 \x ->
@@ -245,7 +245,7 @@ parserTestSuite =
         , describe "nonNegativeIntParser tests"
             [ test "Empty string yields undefined message" <|
                 \() ->
-                    Undefined_
+                    UndefinedMsg_
                         |> Expect.equal (nonNegativeIntParser "")
             , test "A single minus character is invalid" <|
                 \() ->
@@ -253,11 +253,11 @@ parserTestSuite =
                         |> Expect.equal (nonNegativeIntParser "-" |> invalidMsgInput)
             , fuzz (intRange 0 1234) "A valid non-negative integer yields a valid messsage" <|
                 \x ->
-                    Valid_ x
+                    ValidMsg_ x
                         |> Expect.equal (nonNegativeIntParser <| toString x)
             , test "Zero yields a valid messsage" <|
                 \() ->
-                    Valid_ 0
+                    ValidMsg_ 0
                         |> Expect.equal (nonNegativeIntParser "0")
             , test "A negative integer yields an invalid messsage" <|
                 \() ->
@@ -275,7 +275,7 @@ parserTestSuite =
         , describe "simpleFloatParser tests"
             [ test "Empty string yields undefined message" <|
                 \() ->
-                    Undefined_
+                    UndefinedMsg_
                         |> Expect.equal (simpleFloatParser "")
             , test "A single minus character yields work-in-progress message" <|
                 \() ->
@@ -283,27 +283,27 @@ parserTestSuite =
                         |> Expect.equal (simpleFloatParser "-" |> workInProgressMsgInput)
             , fuzz (intRange 1 100) "A valid positive integer yields a valid messsage" <|
                 \x ->
-                    Valid_ (toFloat x)
+                    ValidMsg_ (toFloat x)
                         |> Expect.equal (simpleFloatParser (toString x))
             , fuzz (intRange 1 100) "A valid negative integer yields a valid messsage" <|
                 \x ->
-                    Valid_ (toFloat -x)
+                    ValidMsg_ (toFloat -x)
                         |> Expect.equal (simpleFloatParser (toString -x))
             , fuzz (floatRange 0.01 100.0) "A positive float yields a valid messsage" <|
                 \x ->
-                    Valid_ x
+                    ValidMsg_ x
                         |> Expect.equal (simpleFloatParser (toString x))
             , fuzz (floatRange 0.01 100.0) "A negative float yields a valid messsage" <|
                 \x ->
-                    Valid_ -x
+                    ValidMsg_ -x
                         |> Expect.equal (simpleFloatParser (toString -x))
             , test "A 0 yields a valid messsage" <|
                 \() ->
-                    Valid_ 0.0
+                    ValidMsg_ 0.0
                         |> Expect.equal (simpleFloatParser "0")
             , test "A 0.0 yields a valid messsage" <|
                 \() ->
-                    Valid_ 0.0
+                    ValidMsg_ 0.0
                         |> Expect.equal (simpleFloatParser "0.0")
             , fuzz string "Garbage input yields an invalid message" <|
                 \x ->
@@ -317,7 +317,7 @@ parserTestSuite =
         , describe "simpleNonNegativeFloatParser tests"
             [ test "Empty string yields undefined message" <|
                 \() ->
-                    Undefined_
+                    UndefinedMsg_
                         |> Expect.equal (simpleNonNegativeFloatParser "")
             , test "A single minus character is rejected" <|
                 \() ->
@@ -325,7 +325,7 @@ parserTestSuite =
                         |> Expect.equal (simpleNonNegativeFloatParser "-" |> invalidMsgInput)
             , fuzz (intRange 1 100) "A valid positive integer yields a valid messsage" <|
                 \x ->
-                    Valid_ (toFloat x)
+                    ValidMsg_ (toFloat x)
                         |> Expect.equal (simpleNonNegativeFloatParser <| toString x)
             , fuzz (intRange 1 100) "A valid negative integer yields an invalid messsage" <|
                 \x ->
@@ -333,7 +333,7 @@ parserTestSuite =
                         |> Expect.equal (simpleNonNegativeFloatParser (toString -x) |> invalidMsgInput)
             , fuzz (floatRange 0.01 100.0) "A positive float yields a valid messsage" <|
                 \x ->
-                    Valid_ x
+                    ValidMsg_ x
                         |> Expect.equal (simpleNonNegativeFloatParser <| toString x)
             , fuzz (floatRange 0.01 100.0) "A negative float yields an invalid messsage" <|
                 \x ->
@@ -341,11 +341,11 @@ parserTestSuite =
                         |> Expect.equal (simpleNonNegativeFloatParser (toString -x) |> invalidMsgInput)
             , test "A 0 yields a valid messsage" <|
                 \() ->
-                    Valid_ 0.0
+                    ValidMsg_ 0.0
                         |> Expect.equal (simpleNonNegativeFloatParser "0")
             , test "A 0.0 yields a valid messsage" <|
                 \() ->
-                    Valid_ 0.0
+                    ValidMsg_ 0.0
                         |> Expect.equal (simpleNonNegativeFloatParser "0.0")
             , fuzz string "Garbage input yields an invalid message" <|
                 \x ->
@@ -359,7 +359,7 @@ parserTestSuite =
         , describe "digitParser tests"
             [ test "Empty string yields undefined message" <|
                 \() ->
-                    Undefined_
+                    UndefinedMsg_
                         |> Expect.equal (digitParser "")
             , test "A single minus character is rejected" <|
                 \() ->
@@ -367,7 +367,7 @@ parserTestSuite =
                         |> Expect.equal (digitParser "-" |> invalidMsgInput)
             , fuzz (intRange 0 9) "Decimal digits are accpeted" <|
                 \x ->
-                    Valid_ x
+                    ValidMsg_ x
                         |> Expect.equal (digitParser <| toString x)
             , fuzz (intRange 10 100) "A positive integer >9 yields an invalid messsage" <|
                 \x ->
@@ -428,30 +428,30 @@ errorResultContainsString subString result =
 workInProgressMsgInput : Msg v -> Result String String
 workInProgressMsgInput msg =
     case msg of
-        Undefined_ ->
+        UndefinedMsg_ ->
             Err "undefined"
 
-        WorkInProgress_ ( input, _ ) ->
+        WorkInProgressMsg_ ( input, _ ) ->
             Ok input
 
-        Valid_ _ ->
+        ValidMsg_ _ ->
             Err "valid"
 
-        Invalid_ _ ->
+        InvalidMsg_ _ ->
             Err "invalid"
 
 
 invalidMsgInput : Msg v -> Result String String
 invalidMsgInput msg =
     case msg of
-        Undefined_ ->
+        UndefinedMsg_ ->
             Err "undefined"
 
-        WorkInProgress_ _ ->
+        WorkInProgressMsg_ _ ->
             Err "work-in-progress"
 
-        Valid_ _ ->
+        ValidMsg_ _ ->
             Err "valid"
 
-        Invalid_ ( input, _ ) ->
+        InvalidMsg_ ( input, _ ) ->
             Ok input
