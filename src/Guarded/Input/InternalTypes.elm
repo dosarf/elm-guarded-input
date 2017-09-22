@@ -33,3 +33,13 @@ type Msg_ value
     | InvalidMsg_ ( Input_, Info_ )
     | WorkInProgressMsg_ ( Input_, Info_ )
     | UndefinedMsg_
+
+
+fromParsedInput : ParsedInput_ value -> Model_ value
+fromParsedInput parsedInput =
+    Model_ { parsedInput = parsedInput, lastError = Nothing }
+
+
+fromParsedInputAndLastError : ParsedInput_ value -> LastError_ -> Model_ value
+fromParsedInputAndLastError parsedInput lastError =
+    Model_ { parsedInput = parsedInput, lastError = Just lastError }

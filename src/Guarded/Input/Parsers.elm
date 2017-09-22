@@ -1,9 +1,9 @@
-module Guarded.Input.Parser exposing (..)
+module Guarded.Input.Parsers exposing (..)
 
+import Regex exposing (regex, contains)
 import Guarded.Util.Integer exposing (toNonNaNInt)
 import Guarded.Input.InternalTypes exposing (..)
-import Guarded.Input.Types exposing (..)
-import Regex exposing (regex, contains)
+import Guarded.Input exposing (..)
 
 
 -- PARSERS
@@ -32,35 +32,6 @@ simpleNonNegativeFloatParser =
 digitParser : String -> Msg Int
 digitParser =
     parser digitGuard (toNonNaNInt >> Result.andThen digitConverter)
-
-
-
--- TODO comment guard: accepts for feasible (work-in-progress or valid) input (-> Nothing), rejects all else (-> Just error)
--- TODO comment convert: converts all valid text to valid value (or fails)
--- TODO comment: any input that wasn't rejected by the guard but failed to convert is considered WiP input
-
-
-parser : (String -> Maybe String) -> (String -> Result String value) -> String -> Msg value
-parser guard convert input =
-    if input == "" then
-        UndefinedMsg_
-    else
-        let
-            rejectionResult =
-                guard input
-
-            conversionResult =
-                convert input
-        in
-            case ( rejectionResult, conversionResult ) of
-                ( Just error, _ ) ->
-                    InvalidMsg_ ( input, error )
-
-                ( Nothing, Err error ) ->
-                    WorkInProgressMsg_ ( input, error )
-
-                ( Nothing, Ok v ) ->
-                    ValidMsg_ v
 
 
 

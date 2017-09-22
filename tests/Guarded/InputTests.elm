@@ -1,12 +1,23 @@
-module Guarded.Input.StateTests exposing (..)
+module Guarded.InputTests exposing (testSuite)
 
-import Guarded.Input.InternalTypes exposing (..)
-import Guarded.Input.Types exposing (..)
-import Guarded.Input.State exposing (..)
 import Test exposing (..)
 import Expect
 import Fuzz exposing (int)
 import String
+import Guarded.Input.InternalTypes exposing (..)
+import Guarded.Input exposing (..)
+
+
+testSuite : Test
+testSuite =
+    describe "Guarded.Input tests"
+        [ modelStateTestSuite
+        , utilityFunctionsTest
+        ]
+
+
+
+-- Model state tests
 
 
 validModel : Model Bool
@@ -69,9 +80,9 @@ validModelWithError =
     Model_ { parsedInput = Valid_ True, lastError = Just <| LastError_ "Tre" "Tre is in no way valid boolean value" }
 
 
-testSuite : Test
-testSuite =
-    describe "Guarded.Input.State tests"
+modelStateTestSuite : Test
+modelStateTestSuite =
+    describe "Guarded.Input model state tests"
         [ describe "init tests"
             [ test "Initial model has no values, the working input empty, and the message is 'Undefined'" <|
                 \() ->
@@ -138,4 +149,73 @@ testSuite =
                     validModelWithError
                         |> Expect.equal (Tuple.first (update invalidMsg validModel))
             ]
+        ]
+
+
+
+-- Utility functions tests
+
+
+validModelNoLastError : Model Int
+validModelNoLastError =
+    fromParsedInput <| Valid_ 5
+
+
+validModelWithLastError : Model Int
+validModelWithLastError =
+    fromParsedInputAndLastError (Valid_ 5) { input = "5a", info = "parse error" }
+
+
+workInProgress : Model Int
+workInProgress =
+    fromParsedInput <| WorkInProgress_ "-"
+
+
+undefinedNoLastError : Model Int
+undefinedNoLastError =
+    fromParsedInput Undefined_
+
+
+undefinedWithLastError : Model Int
+undefinedWithLastError =
+    fromParsedInputAndLastError Undefined_ { input = "a", info = "parse error" }
+
+
+utilityFunctionsTest : Test
+utilityFunctionsTest =
+    describe "Guarded.Input utility functions tests"
+        [ describe "inputStringMaybe tests"
+            [ test "Valid model (with no last error) has input string" <|
+                \() ->
+                    Just "5"
+                        |> Expect.equal (inputStringMaybe validModelNoLastError)
+            , test "Valid model (with last error) also has input string" <|
+                \() ->
+                    Just "5"
+                        |> Expect.equal (inputStringMaybe validModelWithLastError)
+            , test "Work-in-progress state has the input string" <|
+                \() ->
+                    Just "-"
+                        |> Expect.equal (inputStringMaybe workInProgress)
+            , test "Undefined model (with no last error) has no input string" <|
+                \() ->
+                    Nothing
+                        |> Expect.equal (inputStringMaybe undefinedNoLastError)
+            , test "Undefined model (with last error) also has no input string" <|
+                \() ->
+                    Nothing
+                        |> Expect.equal (inputStringMaybe undefinedWithLastError)
+            ]
+        , describe "Some inputString tests"
+            [ test "Valid model (with no last error) has input string" <|
+                \() ->
+                    "5"
+                        |> Expect.equal (inputString validModelNoLastError)
+            , test "Undefined model (with no last error) has empty input string" <|
+                \() ->
+                    ""
+                        |> Expect.equal (inputString undefinedNoLastError)
+            ]
+          -- TODO test lastError
+          -- TODO test toResult
         ]

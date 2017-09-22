@@ -5,16 +5,14 @@ import Expect
 import Fuzz exposing (list, int, tuple, string)
 import String
 import Guarded.Util.IntegerTests exposing (testSuite)
-import Guarded.Input.TypesTests exposing (testSuite)
-import Guarded.Input.StateTests exposing (testSuite)
-import Guarded.Input.ParserTests exposing (testSuite)
+import Guarded.Input.ParsersTests exposing (testSuite)
+import Guarded.InputTests exposing (testSuite)
 
 
 all : Test
 all =
-    describe "Guarded.Input tests"
+    describe "All tests for Elm package Guarded.Input"
         [ Guarded.Util.IntegerTests.testSuite
-        , Guarded.Input.TypesTests.testSuite
-        , Guarded.Input.StateTests.testSuite
-        , Guarded.Input.ParserTests.testSuite
+        , Guarded.Input.ParsersTests.testSuite
+        , Guarded.InputTests.testSuite
         ]

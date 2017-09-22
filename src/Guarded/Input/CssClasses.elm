@@ -1,7 +1,7 @@
 module Guarded.Input.CssClasses exposing (..)
 
-import Guarded.Input.Types exposing (Model)
 import Guarded.Input.InternalTypes exposing (ParsedInput_(..), Model_(..))
+import Guarded.Input exposing (Model)
 
 
 inputValidClass : String

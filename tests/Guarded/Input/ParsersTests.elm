@@ -1,12 +1,12 @@
-module Guarded.Input.ParserTests exposing (testSuite)
+module Guarded.Input.ParsersTests exposing (testSuite)
 
 import Test exposing (..)
 import Expect
 import Fuzz exposing (float, floatRange, int, intRange, string)
 import String
 import Guarded.Input.InternalTypes exposing (..)
-import Guarded.Input.Types exposing (..)
-import Guarded.Input.Parser exposing (..)
+import Guarded.Input exposing (..)
+import Guarded.Input.Parsers exposing (..)
 
 
 -- TODO boundedNumberConverter tests
@@ -215,7 +215,7 @@ converterTestSuite =
 
 parserTestSuite : Test
 parserTestSuite =
-    describe "parser tests"
+    describe "type specific parser tests"
         [ describe "intParser tests"
             [ test "Empty string yields undefined message" <|
                 \() ->

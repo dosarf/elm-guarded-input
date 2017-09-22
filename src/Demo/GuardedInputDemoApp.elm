@@ -1,9 +1,7 @@
 module Demo.GuardedInputDemoApp exposing (..)
 
-import Guarded.Input.Events
-import Guarded.Input.State
-import Guarded.Input.Types
-import Guarded.Input.Parser
+import Guarded.Input
+import Guarded.Input.Parsers
 import Guarded.Input.CssClasses
 import Html exposing (Attribute, Html, div, input, text, table, caption, span, thead, tbody, tr, td)
 import Html.Attributes exposing (class, classList, value, style)
@@ -11,24 +9,24 @@ import Html.Lazy exposing (lazy3)
 
 
 type alias Model =
-    { parsedAnyInt : Guarded.Input.Types.Model Int
-    , parsedNonNegativeInt : Guarded.Input.Types.Model Int
-    , parsedDigit : Guarded.Input.Types.Model Int
+    { parsedAnyInt : Guarded.Input.Model Int
+    , parsedNonNegativeInt : Guarded.Input.Model Int
+    , parsedDigit : Guarded.Input.Model Int
     }
 
 
 initialModel : Model
 initialModel =
-    { parsedAnyInt = Guarded.Input.State.initFor -42
-    , parsedNonNegativeInt = Guarded.Input.State.initFor 42
-    , parsedDigit = Guarded.Input.State.initFor 2
+    { parsedAnyInt = Guarded.Input.initFor -42
+    , parsedNonNegativeInt = Guarded.Input.initFor 42
+    , parsedDigit = Guarded.Input.initFor 2
     }
 
 
 type Msg
-    = AnyIntChanged (Guarded.Input.Types.Msg Int)
-    | NonNegativeIntChanged (Guarded.Input.Types.Msg Int)
-    | DigitChanged (Guarded.Input.Types.Msg Int)
+    = AnyIntChanged (Guarded.Input.Msg Int)
+    | NonNegativeIntChanged (Guarded.Input.Msg Int)
+    | DigitChanged (Guarded.Input.Msg Int)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -37,7 +35,7 @@ update message model =
         AnyIntChanged msg ->
             let
                 ( newParsedInt, subCmd ) =
-                    Guarded.Input.State.update msg model.parsedAnyInt
+                    Guarded.Input.update msg model.parsedAnyInt
             in
                 ( { model
                     | parsedAnyInt = newParsedInt
@@ -48,7 +46,7 @@ update message model =
         NonNegativeIntChanged msg ->
             let
                 ( newParsedInt, subCmd ) =
-                    Guarded.Input.State.update msg model.parsedNonNegativeInt
+                    Guarded.Input.update msg model.parsedNonNegativeInt
             in
                 ( { model
                     | parsedNonNegativeInt = newParsedInt
@@ -59,7 +57,7 @@ update message model =
         DigitChanged msg ->
             let
                 ( newParsedInt, subCmd ) =
-                    Guarded.Input.State.update msg model.parsedDigit
+                    Guarded.Input.update msg model.parsedDigit
             in
                 ( { model
                     | parsedDigit = newParsedInt
@@ -117,13 +115,13 @@ demoTableBody : Model -> Html Msg
 demoTableBody model =
     tbody
         []
-        [ demoTableInputRow "Any integer" Guarded.Input.Parser.intParser AnyIntChanged model.parsedAnyInt
-        , demoTableInputRow "Non-negative" Guarded.Input.Parser.nonNegativeIntParser NonNegativeIntChanged model.parsedNonNegativeInt
-        , demoTableInputRow "Digit" Guarded.Input.Parser.digitParser DigitChanged model.parsedDigit
+        [ demoTableInputRow "Any integer" Guarded.Input.Parsers.intParser AnyIntChanged model.parsedAnyInt
+        , demoTableInputRow "Non-negative" Guarded.Input.Parsers.nonNegativeIntParser NonNegativeIntChanged model.parsedNonNegativeInt
+        , demoTableInputRow "Digit" Guarded.Input.Parsers.digitParser DigitChanged model.parsedDigit
         ]
 
 
-demoTableInputRow : String -> (String -> Guarded.Input.Types.Msg value) -> (Guarded.Input.Types.Msg value -> Msg) -> Guarded.Input.Types.Model value -> Html Msg
+demoTableInputRow : String -> (String -> Guarded.Input.Msg value) -> (Guarded.Input.Msg value -> Msg) -> Guarded.Input.Model value -> Html Msg
 demoTableInputRow description inputParser msgTag parsedModel =
     tr
         []
@@ -138,21 +136,21 @@ demoTableInputRow description inputParser msgTag parsedModel =
             []
             [ div
                 [ classList <| Guarded.Input.CssClasses.defaultClassListForInput parsedModel ]
-                [ text <| (Guarded.Input.Types.inputStringMaybe parsedModel |> Maybe.withDefault "(none)") ]
+                [ text <| (Guarded.Input.inputStringMaybe parsedModel |> Maybe.withDefault "(none)") ]
             ]
         , td
             []
             [ div
                 [ classList <| Guarded.Input.CssClasses.defaultClassListForAlert parsedModel ]
-                [ text <| Maybe.withDefault "" <| Guarded.Input.Types.lastError parsedModel ]
+                [ text <| Maybe.withDefault "" <| Guarded.Input.lastError parsedModel ]
             ]
         ]
 
 
-demoInput : (String -> Guarded.Input.Types.Msg value) -> (Guarded.Input.Types.Msg value -> Msg) -> Guarded.Input.Types.Model value -> Html Msg
+demoInput : (String -> Guarded.Input.Msg value) -> (Guarded.Input.Msg value -> Msg) -> Guarded.Input.Model value -> Html Msg
 demoInput inputParser msgTag parsedModel =
     input
-        [ Guarded.Input.Events.parseOnInput msgTag inputParser
-        , value (Guarded.Input.Types.inputString parsedModel)
+        [ Guarded.Input.parseOnInput msgTag inputParser
+        , value (Guarded.Input.inputString parsedModel)
         ]
         []
