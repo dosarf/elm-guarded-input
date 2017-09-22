@@ -56,15 +56,7 @@ selectClassForAlert : Model value -> String -> Bool
 selectClassForAlert (Model_ model) class =
     case model.lastError of
         Just { input, info } ->
-            case model.parsedInput of
-                WorkInProgress_ _ ->
-                    class == inputInvalidClass
-
-                Undefined_ ->
-                    class == inputUndefinedClass
-
-                _ ->
-                    class == inputInvalidClass
+            class == inputInvalidClass
 
         Nothing ->
             selectClassForInput (Model_ model) class
