@@ -16,13 +16,3 @@ nonNaNIntResult n =
         Err "NaN"
     else
         Ok n
-
-
-
-{- A String -> Int converter that will not return a sneaky NaN -}
-
-
-toNonNaNInt : String -> Result String Int
-toNonNaNInt =
-    String.toInt
-        >> Result.andThen nonNaNIntResult

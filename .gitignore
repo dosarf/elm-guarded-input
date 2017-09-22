@@ -1,6 +1,11 @@
 # elm-package generated files
 elm-stuff
+
 # elm-repl generated files
 repl-temp-*
+
 # elm make generated JavaScript files
 src/**/*.js
+
+# produced by elm-make --docs=documentation.json
+documentation.json

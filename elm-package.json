@@ -8,8 +8,7 @@
     ],
     "exposed-modules": [
       "Guarded.Input",
-      "Guarded.Input.Parsers",
-      "Guarded.Input.CssClasses"
+      "Guarded.Input.Parsers"
     ],
     "dependencies": {
         "elm-lang/core": "5.1.1 <= v < 6.0.0",

@@ -28,32 +28,4 @@ testSuite =
                     Err "NaN"
                         |> Expect.equal (String.toInt "-" |> Result.andThen nonNaNIntResult)
             ]
-        , describe "toNonNanInt tests"
-            [ fuzz int "Valid integers are converted" <|
-                \x ->
-                    Ok x
-                        |> Expect.equal (toNonNaNInt <| toString x)
-            , test "A minus ('-') sign is not converted to integer (not matter what String.toInt thinks)" <|
-                \() ->
-                    Err "NaN"
-                        |> Expect.equal (toNonNaNInt "-")
-            , fuzz string "Garbage input is not accepted as valid integer" <|
-                \x ->
-                    let
-                        garbledInput =
-                            "a" ++ x
-                    in
-                        True
-                            |> Expect.equal (toNonNaNInt garbledInput |> resultContainsError garbledInput)
-            ]
         ]
-
-
-resultContainsError : String -> Result String value -> Bool
-resultContainsError subString result =
-    case result of
-        Ok _ ->
-            False
-
-        Err error ->
-            String.contains subString error

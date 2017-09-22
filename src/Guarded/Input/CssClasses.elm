@@ -4,6 +4,9 @@ import Guarded.Input.InternalTypes exposing (ParsedInput_(..), Model_(..))
 import Guarded.Input exposing (Model)
 
 
+-- TODO none of this is very useful in a library
+
+
 inputValidClass : String
 inputValidClass =
     "guarded-input-valid"

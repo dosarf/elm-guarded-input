@@ -132,17 +132,17 @@ guardTestSuite =
                     in
                         Expect.true "garbage" (simpleNonNegativeFloatGuard garbledInput |> errorContains garbledInput)
             ]
-        , describe "digitGuard tests"
+        , describe "decimalDigitGuard tests"
             [ test "rejects '-'" <|
                 \() ->
-                    Expect.true "-" (digitGuard "-" |> errorContains "-")
+                    Expect.true "-" (decimalDigitGuard "-" |> errorContains "-")
             , fuzz (intRange 1 100) "rejects negative integers" <|
                 \x ->
                     let
                         input =
                             toString -x
                     in
-                        Expect.true "negative integer" (digitGuard input |> errorContains input)
+                        Expect.true "negative integer" (decimalDigitGuard input |> errorContains input)
             , fuzz (intRange 0 9) "accepts positive digits" <|
                 \x ->
                     Nothing
@@ -153,14 +153,14 @@ guardTestSuite =
                         input =
                             toString x
                     in
-                        Expect.true "too big integer" (digitGuard input |> errorContains input)
+                        Expect.true "too big integer" (decimalDigitGuard input |> errorContains input)
             , fuzz string "rejects garbage" <|
                 \x ->
                     let
                         garbledInput =
                             "a" ++ x
                     in
-                        Expect.true "garbage" (digitGuard garbledInput |> errorContains garbledInput)
+                        Expect.true "garbage" (decimalDigitGuard garbledInput |> errorContains garbledInput)
             ]
         ]
 
@@ -168,47 +168,65 @@ guardTestSuite =
 converterTestSuite : Test
 converterTestSuite =
     describe "converter tests"
-        [ describe "nonNegativeNumberConverter tests for integers"
+        [ describe "intConverter tests"
+            [ fuzz int "Valid integers are converted" <|
+                \x ->
+                    Ok x
+                        |> Expect.equal (intConverter <| toString x)
+            , test "A minus ('-') sign is not converted to integer (not matter what String.toInt thinks)" <|
+                \() ->
+                    Err "NaN"
+                        |> Expect.equal (intConverter "-")
+            , fuzz string "Garbage input is not accepted as valid integer" <|
+                \x ->
+                    let
+                        garbledInput =
+                            "a" ++ x
+                    in
+                        True
+                            |> Expect.equal (intConverter garbledInput |> resultContainsError garbledInput)
+            ]
+        , describe "nonNegativeNumberChecker tests for integers"
             [ fuzz (intRange 0 100) "converts non-negative" <|
                 \x ->
                     Ok x
-                        |> Expect.equal (nonNegativeNumberConverter x)
+                        |> Expect.equal (nonNegativeNumberChecker x)
             , fuzz (intRange 1 100) "fails negative" <|
                 \x ->
-                    Expect.true "negative" (nonNegativeNumberConverter -x |> errorResultContainsString (toString -x))
+                    Expect.true "negative" (nonNegativeNumberChecker -x |> errorResultContainsString (toString -x))
             ]
-        , describe "nonNegativeNumberConverter tests for float"
+        , describe "nonNegativeNumberChecker tests for float"
             [ fuzz (floatRange 0.0 100.0) "converts non-negative" <|
                 \x ->
                     Ok x
-                        |> Expect.equal (nonNegativeNumberConverter x)
+                        |> Expect.equal (nonNegativeNumberChecker x)
             , fuzz (floatRange 0.01 100.0) "fails negative" <|
                 \x ->
-                    Expect.true "negative" (nonNegativeNumberConverter -x |> errorResultContainsString (toString -x))
+                    Expect.true "negative" (nonNegativeNumberChecker -x |> errorResultContainsString (toString -x))
             ]
-        , describe "positiveNumberConverter tests for integers"
+        , describe "positiveNumberChecker tests for integers"
             [ fuzz (intRange 1 100) "converts non-negative" <|
                 \x ->
                     Ok x
-                        |> Expect.equal (positiveNumberConverter x)
+                        |> Expect.equal (positiveNumberChecker x)
             , test "fails 0" <|
                 \() ->
-                    Expect.true "zero" (positiveNumberConverter 0 |> errorResultContainsString "0")
+                    Expect.true "zero" (positiveNumberChecker 0 |> errorResultContainsString "0")
             , fuzz (intRange 1 100) "fails negative" <|
                 \x ->
-                    Expect.true "negative" (positiveNumberConverter -x |> errorResultContainsString (toString -x))
+                    Expect.true "negative" (positiveNumberChecker -x |> errorResultContainsString (toString -x))
             ]
-        , describe "positiveNumberConverter tests for floats"
+        , describe "positiveNumberChecker tests for floats"
             [ fuzz (floatRange 0.01 100.0) "converts non-negative" <|
                 \x ->
                     Ok x
-                        |> Expect.equal (positiveNumberConverter x)
+                        |> Expect.equal (positiveNumberChecker x)
             , test "fails 0.0" <|
                 \() ->
-                    Expect.true "zero" (positiveNumberConverter 0.0 |> errorResultContainsString "0")
+                    Expect.true "zero" (positiveNumberChecker 0.0 |> errorResultContainsString "0")
             , fuzz (floatRange 0.01 100.0) "fails negative" <|
                 \x ->
-                    Expect.true "negative" (positiveNumberConverter -x |> errorResultContainsString (toString -x))
+                    Expect.true "negative" (positiveNumberChecker -x |> errorResultContainsString (toString -x))
             ]
         ]
 
@@ -356,19 +374,19 @@ parserTestSuite =
                         Ok garbledInput
                             |> Expect.equal (simpleNonNegativeFloatParser garbledInput |> invalidMsgInput)
             ]
-        , describe "digitParser tests"
+        , describe "decimalDigitParser tests"
             [ test "Empty string yields undefined message" <|
                 \() ->
                     UndefinedMsg_
-                        |> Expect.equal (digitParser "")
+                        |> Expect.equal (decimalDigitParser "")
             , test "A single minus character is rejected" <|
                 \() ->
                     Ok "-"
-                        |> Expect.equal (digitParser "-" |> invalidMsgInput)
-            , fuzz (intRange 0 9) "Decimal digits are accpeted" <|
+                        |> Expect.equal (decimalDigitParser "-" |> invalidMsgInput)
+            , fuzz (intRange 0 9) "Decimal decimalDigits are accpeted" <|
                 \x ->
                     ValidMsg_ x
-                        |> Expect.equal (digitParser <| toString x)
+                        |> Expect.equal (decimalDigitParser <| toString x)
             , fuzz (intRange 10 100) "A positive integer >9 yields an invalid messsage" <|
                 \x ->
                     let
@@ -376,7 +394,7 @@ parserTestSuite =
                             toString x
                     in
                         Ok input
-                            |> Expect.equal (digitParser input |> invalidMsgInput)
+                            |> Expect.equal (decimalDigitParser input |> invalidMsgInput)
             , fuzz (intRange 1 100) "A negative integer yields an invalid messsage" <|
                 \x ->
                     let
@@ -384,7 +402,7 @@ parserTestSuite =
                             toString -x
                     in
                         Ok input
-                            |> Expect.equal (digitParser input |> invalidMsgInput)
+                            |> Expect.equal (decimalDigitParser input |> invalidMsgInput)
             , test "A float between 0 and 9 yields an invalid messsage" <|
                 \x ->
                     let
@@ -392,7 +410,7 @@ parserTestSuite =
                             toString 1.23
                     in
                         Ok input
-                            |> Expect.equal (digitParser input |> invalidMsgInput)
+                            |> Expect.equal (decimalDigitParser input |> invalidMsgInput)
             , fuzz string "Garbage input yields an invalid message" <|
                 \x ->
                     let
@@ -400,7 +418,7 @@ parserTestSuite =
                             ("1a3" ++ x)
                     in
                         Ok garbledInput
-                            |> Expect.equal (digitParser garbledInput |> invalidMsgInput)
+                            |> Expect.equal (decimalDigitParser garbledInput |> invalidMsgInput)
             ]
         ]
 
@@ -455,3 +473,13 @@ invalidMsgInput msg =
 
         InvalidMsg_ ( input, _ ) ->
             Ok input
+
+
+resultContainsError : String -> Result String value -> Bool
+resultContainsError subString result =
+    case result of
+        Ok _ ->
+            False
+
+        Err error ->
+            String.contains subString error

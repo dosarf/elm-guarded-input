@@ -117,7 +117,7 @@ demoTableBody model =
         []
         [ demoTableInputRow "Any integer" Guarded.Input.Parsers.intParser AnyIntChanged model.parsedAnyInt
         , demoTableInputRow "Non-negative" Guarded.Input.Parsers.nonNegativeIntParser NonNegativeIntChanged model.parsedNonNegativeInt
-        , demoTableInputRow "Digit" Guarded.Input.Parsers.digitParser DigitChanged model.parsedDigit
+        , demoTableInputRow "Digit" Guarded.Input.Parsers.decimalDigitParser DigitChanged model.parsedDigit
         ]
 
 
@@ -151,6 +151,6 @@ demoInput : (String -> Guarded.Input.Msg value) -> (Guarded.Input.Msg value -> M
 demoInput inputParser msgTag parsedModel =
     input
         [ Guarded.Input.parseOnInput msgTag inputParser
-        , value (Guarded.Input.inputString parsedModel)
+        , value <| Guarded.Input.inputString parsedModel
         ]
         []
