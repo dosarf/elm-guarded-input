@@ -16,151 +16,31 @@ import Guarded.Input.Parsers exposing (..)
 testSuite : Test
 testSuite =
     describe "Guarded.Input.Parser tests"
-        [ guardTestSuite
+        [ isWorkInProgressTestSuite
         , converterTestSuite
+        , checkerTestSuite
         , parserTestSuite
         ]
 
 
-guardTestSuite : Test
-guardTestSuite =
-    describe "guard tests"
-        [ describe "intGuard tests"
-            [ test "accepts '-'" <|
+isWorkInProgressTestSuite : Test
+isWorkInProgressTestSuite =
+    describe "isWorkInProgress tests"
+        [ describe "isWorkInProgressForNegativeNumber tests"
+            [ test "A single minus char string is accepted as work-in-progress" <|
                 \() ->
-                    Nothing
-                        |> Expect.equal (intGuard "-")
-            , fuzz (intRange 1 100) "accepts negative integers" <|
-                \x ->
-                    Nothing
-                        |> Expect.equal (intGuard <| toString -x)
-            , fuzz (intRange 0 100) "accepts positive integers" <|
-                \x ->
-                    Nothing
-                        |> Expect.equal (intGuard <| toString x)
-            , fuzz string "rejects garbage" <|
-                \x ->
-                    let
-                        garbledInput =
-                            "a" ++ x
-                    in
-                        Expect.true "rejects garbage" (intGuard garbledInput |> errorContains garbledInput)
+                    Expect.true "minus" (isWorkInProgressForNegativeNumber "-")
+            , test "An empty string is not accepted as work-in-progress" <|
+                \() ->
+                    Expect.false "empty" (isWorkInProgressForNegativeNumber "")
+            , test "Strings (other than a minus char) are not accepted as work-in-progress" <|
+                \() ->
+                    Expect.false "some other string" (isWorkInProgressForNegativeNumber "12a")
             ]
-        , describe "nonNegativeIntGuard"
-            [ test "rejects '-'" <|
-                \() ->
-                    Expect.true "'-'" (nonNegativeIntGuard "-" |> errorContains "-")
-            , fuzz (intRange 1 100) "accepts negative integers" <|
+        , describe "nothingIsWorkInProgress tests"
+            [ fuzz string "no string is accepted as work-in-progress" <|
                 \x ->
-                    let
-                        negativeInput =
-                            "-" ++ (toString x)
-                    in
-                        Expect.true "negative" (nonNegativeIntGuard negativeInput |> errorContains negativeInput)
-            , fuzz (intRange 0 100) "accepts positive integers" <|
-                \x ->
-                    Nothing
-                        |> Expect.equal (nonNegativeIntGuard <| toString x)
-            , fuzz string "rejects garbage" <|
-                \x ->
-                    let
-                        garbledInput =
-                            "a" ++ x
-                    in
-                        Expect.true "garbage" (nonNegativeIntGuard garbledInput |> errorContains garbledInput)
-            ]
-        , describe "simpleFloatGuard"
-            [ test "accepts '-'" <|
-                \() ->
-                    Nothing
-                        |> Expect.equal (simpleFloatGuard "-")
-            , fuzz (intRange 1 100) "accepts negative integers" <|
-                \x ->
-                    Nothing
-                        |> Expect.equal (simpleFloatGuard <| toString -x)
-            , fuzz (floatRange 0.1 100.0) "accepts negative floats" <|
-                \x ->
-                    Nothing
-                        |> Expect.equal (simpleFloatGuard <| toString -x)
-            , fuzz (intRange 0 100) "accepts positive integers" <|
-                \x ->
-                    Nothing
-                        |> Expect.equal (simpleFloatGuard <| toString x)
-            , fuzz (floatRange 0.0 100.0) "accepts positive floats" <|
-                \x ->
-                    Nothing
-                        |> Expect.equal (simpleFloatGuard <| toString x)
-            , fuzz string "rejects garbage" <|
-                \x ->
-                    let
-                        garbledInput =
-                            "a" ++ x
-                    in
-                        Expect.true "garbage" (simpleFloatGuard garbledInput |> errorContains garbledInput)
-            ]
-        , describe "simpleNonNegativeFloatGuard"
-            [ test "rejects '-'" <|
-                \() ->
-                    Expect.true "-" (simpleNonNegativeFloatGuard "-" |> errorContains "-")
-            , fuzz (intRange 1 100) "rejects negative integers" <|
-                \x ->
-                    let
-                        input =
-                            toString -x
-                    in
-                        Expect.true "negative integer" (simpleNonNegativeFloatGuard input |> errorContains input)
-            , fuzz (floatRange 0.1 100.0) "rejects negative floats" <|
-                \x ->
-                    let
-                        input =
-                            toString -x
-                    in
-                        Expect.true "negative float" (simpleNonNegativeFloatGuard input |> errorContains input)
-            , fuzz (intRange 0 100) "accepts positive integers" <|
-                \x ->
-                    Nothing
-                        |> Expect.equal (simpleNonNegativeFloatGuard <| toString x)
-            , fuzz (floatRange 0.0 100.0) "accepts positive floats" <|
-                \x ->
-                    Nothing
-                        |> Expect.equal (simpleNonNegativeFloatGuard <| toString x)
-            , fuzz string "rejects garbage" <|
-                \x ->
-                    let
-                        garbledInput =
-                            "a" ++ x
-                    in
-                        Expect.true "garbage" (simpleNonNegativeFloatGuard garbledInput |> errorContains garbledInput)
-            ]
-        , describe "decimalDigitGuard tests"
-            [ test "rejects '-'" <|
-                \() ->
-                    Expect.true "-" (decimalDigitGuard "-" |> errorContains "-")
-            , fuzz (intRange 1 100) "rejects negative integers" <|
-                \x ->
-                    let
-                        input =
-                            toString -x
-                    in
-                        Expect.true "negative integer" (decimalDigitGuard input |> errorContains input)
-            , fuzz (intRange 0 9) "accepts positive digits" <|
-                \x ->
-                    Nothing
-                        |> Expect.equal (simpleNonNegativeFloatGuard <| toString x)
-            , fuzz (intRange 10 100) "rejects positive integers > 9" <|
-                \x ->
-                    let
-                        input =
-                            toString x
-                    in
-                        Expect.true "too big integer" (decimalDigitGuard input |> errorContains input)
-            , fuzz string "rejects garbage" <|
-                \x ->
-                    let
-                        garbledInput =
-                            "a" ++ x
-                    in
-                        Expect.true "garbage" (decimalDigitGuard garbledInput |> errorContains garbledInput)
+                    Expect.false "any string" (nothingIsWorkInProgress x)
             ]
         ]
 
@@ -186,7 +66,13 @@ converterTestSuite =
                         True
                             |> Expect.equal (intConverter garbledInput |> resultContainsError garbledInput)
             ]
-        , describe "nonNegativeNumberChecker tests for integers"
+        ]
+
+
+checkerTestSuite : Test
+checkerTestSuite =
+    describe "Checker tests"
+        [ describe "nonNegativeNumberChecker tests for integers"
             [ fuzz (intRange 0 100) "converts non-negative" <|
                 \x ->
                     Ok x

@@ -6,8 +6,8 @@ that may come useful when constructing your own parsers.
 # Parsers
 @docs intParser, nonNegativeIntParser, simpleFloatParser, simpleNonNegativeFloatParser, decimalDigitParser
 
-# Guards
-@docs intGuard, nonNegativeIntGuard, simpleFloatGuard, simpleNonNegativeFloatGuard, decimalDigitGuard, regexGuard
+# isWorkInProgress
+@docs isWorkInProgressForNegativeNumber, nothingIsWorkInProgress
 
 # Converters
 @docs intConverter
@@ -16,7 +16,6 @@ that may come useful when constructing your own parsers.
 @docs nonNegativeNumberChecker, positiveNumberChecker, decimalDigitChecker, boundedNumberChecker
 -}
 
-import Regex exposing (regex, contains)
 import Guarded.Util.Integer exposing (..)
 import Guarded.Input.InternalTypes exposing (..)
 import Guarded.Input exposing (..)
@@ -29,94 +28,56 @@ import Guarded.Input exposing (..)
 -}
 intParser : String -> Msg Int
 intParser =
-    parser intGuard intConverter
+    parser intConverter isWorkInProgressForNegativeNumber
 
 
 {-| Parses non-negative integers.
 -}
 nonNegativeIntParser : String -> Msg Int
 nonNegativeIntParser =
-    parser nonNegativeIntGuard (intConverter >> Result.andThen nonNegativeNumberChecker)
+    parser (intConverter >> Result.andThen nonNegativeNumberChecker) nothingIsWorkInProgress
 
 
 {-| Parses floats, including negative ones.
 -}
 simpleFloatParser : String -> Msg Float
 simpleFloatParser =
-    parser simpleFloatGuard String.toFloat
+    parser String.toFloat isWorkInProgressForNegativeNumber
 
 
 {-| Parses non-negative floats.
 -}
 simpleNonNegativeFloatParser : String -> Msg Float
 simpleNonNegativeFloatParser =
-    parser simpleNonNegativeFloatGuard (String.toFloat >> Result.andThen nonNegativeNumberChecker)
+    parser (String.toFloat >> Result.andThen nonNegativeNumberChecker) nothingIsWorkInProgress
 
 
 {-| Parses a single decimal digit.
 -}
 decimalDigitParser : String -> Msg Int
 decimalDigitParser =
-    parser decimalDigitGuard (intConverter >> Result.andThen decimalDigitChecker)
+    parser (intConverter >> Result.andThen decimalDigitChecker) nothingIsWorkInProgress
 
 
 
--- Guards
+-- isWorkInProgress
 
 
-{-| Accepts any string that valid integers (including negative ones) can
-possibly start with. Notably it accepts a single minus ('-') character.
+{-| Matches a single minus character ("-"). Useful for number parsers: while
+a single "-" character does not yet constitutes a valid integer or float,
+it is a valid beginning for a negative number.
 -}
-intGuard : String -> Maybe String
-intGuard =
-    regexGuard (Regex.regex "^-?\\d*$") "Cannot be completed to an integer"
+isWorkInProgressForNegativeNumber : String -> Bool
+isWorkInProgressForNegativeNumber input =
+    "-" == input
 
 
-{-| Accepts any string that valid non-negative integers can
-possibly start with. It rejects a single minus ('-') character.
+{-| Matches no input as a work-in-progress input. Useful in cases when the
+set of work-in-progress is empty, like when matching positive integers.
 -}
-nonNegativeIntGuard : String -> Maybe String
-nonNegativeIntGuard =
-    regexGuard (Regex.regex "^\\d*$") "Cannot be completed to a non-negative integer"
-
-
-{-| Accepts any string that valid floats (including negative ones) can
-possibly start with. Notably it accepts a single minus ('-') character.
--}
-simpleFloatGuard : String -> Maybe String
-simpleFloatGuard =
-    regexGuard (Regex.regex "^-?\\d*(\\.\\d*)?$") "Cannot be completed to a float"
-
-
-{-| Accepts any string that valid non-negative floats can
-possibly start with. It rejects a single minus ('-') character.
--}
-simpleNonNegativeFloatGuard : String -> Maybe String
-simpleNonNegativeFloatGuard =
-    regexGuard (Regex.regex "^\\d*(\\.\\d*)?$") "Cannot be completed to a non-negative float"
-
-
-{-| Accepts a single decimal digit.
--}
-decimalDigitGuard : String -> Maybe String
-decimalDigitGuard =
-    regexGuard (Regex.regex "^\\d?$") "Cannot be completed to a digit"
-
-
-{-| A utility to construct a guard that rejects any string that does not contains
-(see Regex.contains) the given regular expression. Arguments: regular
-expression, error message (in case of rejection), input string.
--}
-regexGuard : Regex.Regex -> String -> String -> Maybe String
-regexGuard regex errorMessage input =
-    let
-        matches =
-            Regex.contains regex input
-    in
-        if matches then
-            Nothing
-        else
-            Just <| errorMessage ++ ": " ++ input
+nothingIsWorkInProgress : String -> Bool
+nothingIsWorkInProgress input =
+    False
 
 
 

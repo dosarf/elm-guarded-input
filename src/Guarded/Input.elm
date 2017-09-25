@@ -221,49 +221,47 @@ toResult (Model_ model) =
 
 
 -- Parsing gadgetry
--- TODO switch from guard -> converter direction to converter -> workInProgressMatcher
 
 
 {-| A function to construct your own parsers for guarded input controls. Needs
-a  `guard` and a `convert` function.
-
-The `guard` function (String -> Maybe String) rejects any non-empty invalid input
-text by returning an error message. In case of an acceptable text (either
-acceptable as work-in-progress or actually valid), it is to return Nothing.
+a `convert` and an `isWorkInProgress` function.
 
 The `convert` function (String -> Result String value) attemps converting any
-non-empty input text accepted by the 'guard' function to a value. On failure,
-it is to return an error message.
+non-empty input text. On failure, it is to return an error message.
 
-A non-empty input string rejected by the `guard` is invalid: the update
-function will leave the value part of the model untouched (it will only use
-the error message).
+The `isWorkInProgress` function (String -> Boolean) is to accept any non-empty
+input text rejected by the `convert` that could still evolve into something
+valid. For instance, while 'tru' cannot be converted to a Bool value (hence would
+be rejected by `convert`), it may still end up being 'true', thus the
+`isWorkInProgress` should accept it as work-in-progress input.
 
-A non-empty input string accepted by the `guard` but failed by the `convert` is
-treated as work-in-progress: the update function will update the model to reflect
-the input text entered so far.
+A non-empty input string rejected by both `convert` and `isWorkInProgress` is invalid.
 
-A non-empty input string successfully converted is a valid input, the update
-function will store the converted value.
+A non-empty input string rejected `convert` but accepted by `isWorkInProgress` is
+accepted as work in progress.
+
+A non-empty input string converted successfully to a value by `convert` is
+valid. In this case it does not matter whether `isWorkInProgress` accepts it or
+rejects it
 -}
-parser : (String -> Maybe String) -> (String -> Result String value) -> String -> Msg value
-parser guard convert input =
+parser : (String -> Result String value) -> (String -> Bool) -> String -> Msg value
+parser convert isWorkInProgress input =
     if input == "" then
         UndefinedMsg_
     else
         let
-            rejectionResult =
-                guard input
-
             conversionResult =
                 convert input
-        in
-            case ( rejectionResult, conversionResult ) of
-                ( Just error, _ ) ->
-                    InvalidMsg_ ( input, error )
 
-                ( Nothing, Err error ) ->
+            wip =
+                isWorkInProgress input
+        in
+            case ( conversionResult, wip ) of
+                ( Ok v, _ ) ->
+                    ValidMsg_ v
+
+                ( Err error, True ) ->
                     WorkInProgressMsg_ ( input, error )
 
-                ( Nothing, Ok v ) ->
-                    ValidMsg_ v
+                ( Err error, False ) ->
+                    InvalidMsg_ ( input, error )
