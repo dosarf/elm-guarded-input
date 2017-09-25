@@ -2,7 +2,7 @@ module Demo.GuardedInputDemoApp exposing (..)
 
 import Guarded.Input
 import Guarded.Input.Parsers
-import Guarded.Input.CssClasses
+import Guarded.Input.CssUtil
 import Html exposing (Attribute, Html, div, input, text, table, caption, span, thead, tbody, tr, td)
 import Html.Attributes exposing (class, classList, value, style)
 import Html.Lazy exposing (lazy3)
@@ -135,13 +135,13 @@ demoTableInputRow description inputParser msgTag parsedModel =
         , td
             []
             [ div
-                [ classList <| Guarded.Input.CssClasses.defaultClassListForInput parsedModel ]
+                [ classList <| demoClassListForInput parsedModel ]
                 [ text <| (Guarded.Input.inputStringMaybe parsedModel |> Maybe.withDefault "(none)") ]
             ]
         , td
             []
             [ div
-                [ classList <| Guarded.Input.CssClasses.defaultClassListForAlert parsedModel ]
+                [ classList <| demoClassListForWarning parsedModel ]
                 [ text <| Maybe.withDefault "" <| Guarded.Input.lastError parsedModel ]
             ]
         ]
@@ -152,5 +152,25 @@ demoInput inputParser msgTag parsedModel =
     input
         [ Guarded.Input.parseOnInput msgTag inputParser
         , value <| Guarded.Input.inputString parsedModel
+        , classList <| demoClassListForInput parsedModel
         ]
         []
+
+
+demoClassPurposes : List ( String, Guarded.Input.CssUtil.Purpose )
+demoClassPurposes =
+    [ ( "guarded-input-valid", Guarded.Input.CssUtil.Valid )
+    , ( "guarded-input-invalid", Guarded.Input.CssUtil.Invalid )
+    , ( "guarded-input-work-in-progress", Guarded.Input.CssUtil.WorkInProgress )
+    , ( "guarded-input-undefined", Guarded.Input.CssUtil.Undefined )
+    ]
+
+
+demoClassListForInput : Guarded.Input.Model value -> List ( String, Bool )
+demoClassListForInput =
+    Guarded.Input.CssUtil.classListForInput demoClassPurposes
+
+
+demoClassListForWarning : Guarded.Input.Model value -> List ( String, Bool )
+demoClassListForWarning =
+    Guarded.Input.CssUtil.classListForWarning demoClassPurposes
