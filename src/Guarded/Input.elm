@@ -6,9 +6,9 @@ A guarded input can be in one of three states:
 - work-in-progress (not convertible to a useful value, but could evolve
 potentially into one), and
 - valid (has actual value).
+
 Most notably it cannot be in an invalid state - any such erroneous change is
-rejected by the model, the previous state is preserved (one of the
-three possible above).
+rejected by the model, the previous, necessarily valid state is preserved.
 
 To reflect the model (which may reject the latest attempted input, preserving
 the last acceptable state) in the view, the view function needs to make sure
@@ -156,10 +156,9 @@ update message (Model_ model) =
 -- Utility functions
 
 
-{-| Returns the input text, as accepted so far (the input text could be
-work-in-progress (=not yet a convertible value), or an actual valid string
-convertible to a value), of a guarded input control. In case of undefined
-(empty) text, it returns Nothing.
+{-| Returns the input text, as accepted so far  of a guarded input control.
+In case of undefined (empty) content of the guarded input control,
+it returns `Nothing`.
 -}
 inputStringMaybe : Model value -> Maybe String
 inputStringMaybe (Model_ model) =
@@ -226,10 +225,10 @@ toResult (Model_ model) =
 {-| A function to construct your own parsers for guarded input controls. Needs
 a `convert` and an `isWorkInProgress` function.
 
-The `convert` function (String -> Result String value) attemps converting any
+The `convert` function (`String -> Result String value`) attemps converting any
 non-empty input text. On failure, it is to return an error message.
 
-The `isWorkInProgress` function (String -> Boolean) is to accept any non-empty
+The `isWorkInProgress` function (`String -> Boolean`) is to accept any non-empty
 input text rejected by the `convert` that could still evolve into something
 valid. For instance, while 'tru' cannot be converted to a Bool value (hence would
 be rejected by `convert`), it may still end up being 'true', thus the
