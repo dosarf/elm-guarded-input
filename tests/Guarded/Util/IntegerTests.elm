@@ -1,9 +1,9 @@
 module Guarded.Util.IntegerTests exposing (testSuite)
 
-import Guarded.Util.Integer exposing (..)
 import Test exposing (..)
 import Expect
 import Fuzz exposing (int, string)
+import Guarded.Util.Integer exposing (..)
 
 
 testSuite : Test
