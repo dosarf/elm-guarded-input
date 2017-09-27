@@ -38,14 +38,16 @@ nonNegativeIntParser =
     parser (intConverter >> Result.andThen nonNegativeNumberChecker) nothingIsWorkInProgress
 
 
-{-| Parses floats, including negative ones.
+{-| Parses floats, including negative ones. No scientific notation is supported,
+hence simple.
 -}
 simpleFloatParser : String -> Msg Float
 simpleFloatParser =
     parser String.toFloat isWorkInProgressForNumber
 
 
-{-| Parses non-negative floats.
+{-| Parses non-negative floats. No scientific notation is supported,
+hence simple.
 -}
 simpleNonNegativeFloatParser : String -> Msg Float
 simpleNonNegativeFloatParser =

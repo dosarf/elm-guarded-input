@@ -9,17 +9,21 @@ import Html.Lazy exposing (lazy3)
 
 
 type alias Model =
-    { parsedAnyInt : Guarded.Input.Model Int
+    { parsedInt : Guarded.Input.Model Int
     , parsedNonNegativeInt : Guarded.Input.Model Int
     , parsedDigit : Guarded.Input.Model Int
+    , parsedFloat : Guarded.Input.Model Float
+    , parsedNonNegativeFloat : Guarded.Input.Model Float
     }
 
 
 initialModel : Model
 initialModel =
-    { parsedAnyInt = Guarded.Input.initFor -42
+    { parsedInt = Guarded.Input.initFor -42
     , parsedNonNegativeInt = Guarded.Input.initFor 42
-    , parsedDigit = Guarded.Input.initFor 2
+    , parsedDigit = Guarded.Input.init
+    , parsedFloat = Guarded.Input.init
+    , parsedNonNegativeFloat = Guarded.Input.initFor 3.1415
     }
 
 
@@ -27,6 +31,8 @@ type Msg
     = AnyIntChanged (Guarded.Input.Msg Int)
     | NonNegativeIntChanged (Guarded.Input.Msg Int)
     | DigitChanged (Guarded.Input.Msg Int)
+    | FloatChanged (Guarded.Input.Msg Float)
+    | NonNegativeFloatChanged (Guarded.Input.Msg Float)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -34,35 +40,57 @@ update message model =
     case message of
         AnyIntChanged msg ->
             let
-                ( newParsedInt, subCmd ) =
-                    Guarded.Input.update msg model.parsedAnyInt
+                ( newParsed, subCmd ) =
+                    Guarded.Input.update msg model.parsedInt
             in
                 ( { model
-                    | parsedAnyInt = newParsedInt
+                    | parsedInt = newParsed
                   }
                 , Cmd.map AnyIntChanged subCmd
                 )
 
         NonNegativeIntChanged msg ->
             let
-                ( newParsedInt, subCmd ) =
+                ( newParsed, subCmd ) =
                     Guarded.Input.update msg model.parsedNonNegativeInt
             in
                 ( { model
-                    | parsedNonNegativeInt = newParsedInt
+                    | parsedNonNegativeInt = newParsed
                   }
                 , Cmd.map NonNegativeIntChanged subCmd
                 )
 
         DigitChanged msg ->
             let
-                ( newParsedInt, subCmd ) =
+                ( newParsed, subCmd ) =
                     Guarded.Input.update msg model.parsedDigit
             in
                 ( { model
-                    | parsedDigit = newParsedInt
+                    | parsedDigit = newParsed
                   }
                 , Cmd.map DigitChanged subCmd
+                )
+
+        FloatChanged msg ->
+            let
+                ( newParsed, subCmd ) =
+                    Guarded.Input.update msg model.parsedFloat
+            in
+                ( { model
+                    | parsedFloat = newParsed
+                  }
+                , Cmd.map FloatChanged subCmd
+                )
+
+        NonNegativeFloatChanged msg ->
+            let
+                ( newParsed, subCmd ) =
+                    Guarded.Input.update msg model.parsedNonNegativeFloat
+            in
+                ( { model
+                    | parsedNonNegativeFloat = newParsed
+                  }
+                , Cmd.map NonNegativeFloatChanged subCmd
                 )
 
 
@@ -115,9 +143,11 @@ demoTableBody : Model -> Html Msg
 demoTableBody model =
     tbody
         []
-        [ demoTableInputRow "Any integer" Guarded.Input.Parsers.intParser AnyIntChanged model.parsedAnyInt
-        , demoTableInputRow "Non-negative" Guarded.Input.Parsers.nonNegativeIntParser NonNegativeIntChanged model.parsedNonNegativeInt
+        [ demoTableInputRow "Any integer" Guarded.Input.Parsers.intParser AnyIntChanged model.parsedInt
+        , demoTableInputRow "Non-negative integer" Guarded.Input.Parsers.nonNegativeIntParser NonNegativeIntChanged model.parsedNonNegativeInt
         , demoTableInputRow "Digit" Guarded.Input.Parsers.decimalDigitParser DigitChanged model.parsedDigit
+        , demoTableInputRow "Any float" Guarded.Input.Parsers.simpleFloatParser FloatChanged model.parsedFloat
+        , demoTableInputRow "Non-negative float" Guarded.Input.Parsers.simpleNonNegativeFloatParser NonNegativeFloatChanged model.parsedNonNegativeFloat
         ]
 
 
