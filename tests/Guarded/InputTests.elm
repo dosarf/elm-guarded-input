@@ -80,6 +80,29 @@ validModelWithError =
     Model_ { parsedInput = Valid_ ( True, "True" ), lastError = Just <| LastError_ "Tre" "Tre is in no way valid boolean value" }
 
 
+type TestType
+    = TestValue
+
+
+testParser : String -> Msg TestType
+testParser input =
+    case input of
+        "test-valid" ->
+            ValidMsg_ ( TestValue, input )
+
+        "test-wip" ->
+            WorkInProgressMsg_ ( "test-wip", "error" )
+
+        "test-error" ->
+            InvalidMsg_ ( "test-error", "error" )
+
+        "" ->
+            UndefinedMsg_
+
+        _ ->
+            InvalidMsg_ ( "", "" )
+
+
 modelStateTestSuite : Test
 modelStateTestSuite =
     describe "Guarded.Input model state tests"
@@ -94,6 +117,24 @@ modelStateTestSuite =
                 \x ->
                     Model_ { parsedInput = Valid_ ( x, toString x ), lastError = Nothing }
                         |> Expect.equal (initFor x)
+            ]
+        , describe "initWith tests"
+            [ test "Valid initial input string yields valid initial model without error" <|
+                \() ->
+                    Model_ { parsedInput = Valid_ ( TestValue, "test-valid" ), lastError = Nothing }
+                        |> Expect.equal (initWith testParser "test-valid")
+            , test "Invalid initial input string yields undefined initial model with error" <|
+                \() ->
+                    Model_ { parsedInput = Undefined_, lastError = Just (LastError_ "test-error" "error") }
+                        |> Expect.equal (initWith testParser "test-error")
+            , test "Empty initial input string yields undefined initial model without error" <|
+                \() ->
+                    Model_ { parsedInput = Undefined_, lastError = Nothing }
+                        |> Expect.equal (initWith testParser "")
+            , test "WiP initial input string yields wip model without error" <|
+                \() ->
+                    Model_ { parsedInput = WorkInProgress_ "test-wip", lastError = Nothing }
+                        |> Expect.equal (initWith testParser "test-wip")
             ]
         , describe "update tests for undefined models"
             [ test "Undefined model is turned valid by valid msg" <|

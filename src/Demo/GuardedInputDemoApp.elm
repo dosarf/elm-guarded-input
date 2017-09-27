@@ -14,6 +14,7 @@ type alias Model =
     , parsedDigit : Guarded.Input.Model Int
     , parsedFloat : Guarded.Input.Model Float
     , parsedNonNegativeFloat : Guarded.Input.Model Float
+    , parsedBool : Guarded.Input.Model Bool
     }
 
 
@@ -24,6 +25,7 @@ initialModel =
     , parsedDigit = Guarded.Input.init
     , parsedFloat = Guarded.Input.init
     , parsedNonNegativeFloat = Guarded.Input.initFor 3.1415
+    , parsedBool = Guarded.Input.initWith boolParser "ye"
     }
 
 
@@ -33,6 +35,7 @@ type Msg
     | DigitChanged (Guarded.Input.Msg Int)
     | FloatChanged (Guarded.Input.Msg Float)
     | NonNegativeFloatChanged (Guarded.Input.Msg Float)
+    | BoolChanged (Guarded.Input.Msg Bool)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -93,6 +96,17 @@ update message model =
                 , Cmd.map NonNegativeFloatChanged subCmd
                 )
 
+        BoolChanged msg ->
+            let
+                ( newParsed, subCmd ) =
+                    Guarded.Input.update msg model.parsedBool
+            in
+                ( { model
+                    | parsedBool = newParsed
+                  }
+                , Cmd.map BoolChanged subCmd
+                )
+
 
 view : Model -> Html Msg
 view model =
@@ -143,11 +157,12 @@ demoTableBody : Model -> Html Msg
 demoTableBody model =
     tbody
         []
-        [ demoTableInputRow "Any integer" Guarded.Input.Parsers.intParser AnyIntChanged model.parsedInt
-        , demoTableInputRow "Non-negative integer" Guarded.Input.Parsers.nonNegativeIntParser NonNegativeIntChanged model.parsedNonNegativeInt
-        , demoTableInputRow "Digit" Guarded.Input.Parsers.decimalDigitParser DigitChanged model.parsedDigit
-        , demoTableInputRow "Any float" Guarded.Input.Parsers.simpleFloatParser FloatChanged model.parsedFloat
-        , demoTableInputRow "Non-negative float" Guarded.Input.Parsers.simpleNonNegativeFloatParser NonNegativeFloatChanged model.parsedNonNegativeFloat
+        [ demoTableInputRow "any integer" Guarded.Input.Parsers.intParser AnyIntChanged model.parsedInt
+        , demoTableInputRow "non-negative integer" Guarded.Input.Parsers.nonNegativeIntParser NonNegativeIntChanged model.parsedNonNegativeInt
+        , demoTableInputRow "single digit" Guarded.Input.Parsers.decimalDigitParser DigitChanged model.parsedDigit
+        , demoTableInputRow "any float" Guarded.Input.Parsers.simpleFloatParser FloatChanged model.parsedFloat
+        , demoTableInputRow "non-negative float" Guarded.Input.Parsers.simpleNonNegativeFloatParser NonNegativeFloatChanged model.parsedNonNegativeFloat
+        , demoTableInputRow "yes/no boolean" boolParser BoolChanged model.parsedBool
         ]
 
 
@@ -204,3 +219,33 @@ demoClassListForInput =
 demoClassListForWarning : Guarded.Input.Model value -> List ( String, Bool )
 demoClassListForWarning =
     Guarded.Input.CssUtil.classListForWarning demoClassPurposes
+
+
+
+-- CUSTOM PARSER
+
+
+boolConverter : String -> Result String Bool
+boolConverter input =
+    case input of
+        "yes" ->
+            Ok True
+
+        "no" ->
+            Ok False
+
+        _ ->
+            Err <| "Cannot convert '" ++ input ++ "' to boolean."
+
+
+isWorkInProgressForBool : String -> Bool
+isWorkInProgressForBool input =
+    if String.startsWith input "yes" || String.startsWith input "no" then
+        True
+    else
+        False
+
+
+boolParser : String -> Guarded.Input.Msg Bool
+boolParser =
+    Guarded.Input.parser boolConverter isWorkInProgressForBool

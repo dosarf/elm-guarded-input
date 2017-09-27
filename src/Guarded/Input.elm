@@ -33,7 +33,7 @@ control when generating the view. See `Guarded.Input.inputString`.
 @docs Model, Msg
 
 # Initializers
-@docs init, initFor
+@docs init, initFor, initWith
 
 # view
 @docs parseOnInput
@@ -94,6 +94,45 @@ initFor value =
         { parsedInput = Valid_ ( value, toString value )
         , lastError = Nothing
         }
+
+
+{-| Given a parser and an initial input string, yields an initial model. The model
+is in the exact state as if user had typed (copy-pasted) the initial input
+string to a guarded input control.
+
+Obviously you want to use the very same parser function during model initialization
+that you use for the input control itself (see `parseOnInput`) for sake of
+consistency of your initialized model:
+
+    initialModel =
+        { ...
+        , parsedStuff = Guarded.Input.initWith myStuffParser "initial stuff"
+        }
+
+    ...
+
+    view : Model -> Html Msg
+    view model =
+        input
+            [ Guarded.Input.parseOnInput msgTag myStuffParser
+            , ...
+            ]
+            []
+    ...
+    myStuffParser : String -> Guarded.Input.Msg MyStuff
+    myStuffParser =
+        ...
+-}
+initWith : (String -> Msg value) -> String -> Model value
+initWith parser initialInput =
+    let
+        msg =
+            parser initialInput
+
+        ( firstModel, _ ) =
+            update msg init
+    in
+        firstModel
 
 
 

@@ -9,10 +9,6 @@ import Guarded.Input exposing (..)
 import Guarded.Input.Parsers exposing (..)
 
 
--- TODO boundedNumberConverter tests
--- TODO create custom string-list guard parser
-
-
 testSuite : Test
 testSuite =
     describe "Guarded.Input.Parser tests"
