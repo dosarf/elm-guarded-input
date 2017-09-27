@@ -22,12 +22,12 @@ testSuite =
 
 validModel : Model Bool
 validModel =
-    Model_ { parsedInput = Valid_ True, lastError = Nothing }
+    Model_ { parsedInput = Valid_ ( True, "True" ), lastError = Nothing }
 
 
 validMsg : Msg Bool
 validMsg =
-    ValidMsg_ True
+    ValidMsg_ ( True, "True" )
 
 
 workInProgressModel : Model Bool
@@ -67,17 +67,17 @@ workInProgressModelWithError =
 
 validModel2 : Model Bool
 validModel2 =
-    Model_ { parsedInput = Valid_ False, lastError = Nothing }
+    Model_ { parsedInput = Valid_ ( False, "False" ), lastError = Nothing }
 
 
 validMsg2 : Msg Bool
 validMsg2 =
-    ValidMsg_ False
+    ValidMsg_ ( False, "False" )
 
 
 validModelWithError : Model Bool
 validModelWithError =
-    Model_ { parsedInput = Valid_ True, lastError = Just <| LastError_ "Tre" "Tre is in no way valid boolean value" }
+    Model_ { parsedInput = Valid_ ( True, "True" ), lastError = Just <| LastError_ "Tre" "Tre is in no way valid boolean value" }
 
 
 modelStateTestSuite : Test
@@ -92,7 +92,7 @@ modelStateTestSuite =
         , describe "initFor tests"
             [ fuzz int "Model initialized for a given value has that value, and there is no last error" <|
                 \x ->
-                    Model_ { parsedInput = Valid_ x, lastError = Nothing }
+                    Model_ { parsedInput = Valid_ ( x, toString x ), lastError = Nothing }
                         |> Expect.equal (initFor x)
             ]
         , describe "update tests for undefined models"
@@ -158,12 +158,12 @@ modelStateTestSuite =
 
 validModelNoLastError : Model Int
 validModelNoLastError =
-    fromParsedInput <| Valid_ 5
+    fromParsedInput <| Valid_ ( 5, "5" )
 
 
 validModelWithLastError : Model Int
 validModelWithLastError =
-    fromParsedInputAndLastError (Valid_ 5) { input = "5a", info = "parse error" }
+    fromParsedInputAndLastError (Valid_ ( 5, "5" )) { input = "5a", info = "parse error" }
 
 
 workInProgress : Model Int

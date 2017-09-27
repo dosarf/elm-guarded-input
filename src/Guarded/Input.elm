@@ -91,7 +91,7 @@ last input attempt.
 initFor : value -> Model value
 initFor value =
     Model_
-        { parsedInput = Valid_ value
+        { parsedInput = Valid_ ( value, toString value )
         , lastError = Nothing
         }
 
@@ -174,8 +174,8 @@ it returns `Nothing`.
 inputStringMaybe : Model value -> Maybe String
 inputStringMaybe (Model_ model) =
     case model.parsedInput of
-        Valid_ value ->
-            Just <| toString value
+        Valid_ ( value, input ) ->
+            Just input
 
         WorkInProgress_ acceptedInputSoFar ->
             Just acceptedInputSoFar
@@ -215,7 +215,7 @@ of work-in-progress or undefined state, it return Err.
 toResult : Model value -> Result String value
 toResult (Model_ model) =
     case model.parsedInput of
-        Valid_ value ->
+        Valid_ ( value, input ) ->
             Ok value
 
         WorkInProgress_ input ->
@@ -264,7 +264,7 @@ parser convert isWorkInProgress input =
         in
             case ( conversionResult, wip ) of
                 ( Ok v, _ ) ->
-                    ValidMsg_ v
+                    ValidMsg_ ( v, input )
 
                 ( Err error, True ) ->
                     WorkInProgressMsg_ ( input, error )

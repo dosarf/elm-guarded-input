@@ -7,7 +7,7 @@ that may come useful when constructing your own parsers.
 @docs intParser, nonNegativeIntParser, simpleFloatParser, simpleNonNegativeFloatParser, decimalDigitParser
 
 # isWorkInProgress
-@docs isWorkInProgressForNegativeNumber, nothingIsWorkInProgress
+@docs isWorkInProgressForNumber, nothingIsWorkInProgress
 
 # Converters
 @docs intConverter
@@ -28,7 +28,7 @@ import Guarded.Input exposing (..)
 -}
 intParser : String -> Msg Int
 intParser =
-    parser intConverter isWorkInProgressForNegativeNumber
+    parser intConverter isWorkInProgressForNumber
 
 
 {-| Parses non-negative integers.
@@ -42,7 +42,7 @@ nonNegativeIntParser =
 -}
 simpleFloatParser : String -> Msg Float
 simpleFloatParser =
-    parser String.toFloat isWorkInProgressForNegativeNumber
+    parser String.toFloat isWorkInProgressForNumber
 
 
 {-| Parses non-negative floats.
@@ -64,11 +64,11 @@ decimalDigitParser =
 
 
 {-| Matches a single minus character ("-"). Useful for number parsers: while
-a single "-" character does not yet constitutes a valid integer or float,
-it is a valid beginning for a negative number.
+a single "-" character does not yet constitutes a valid number (integer or float),
+it is a valid beginning for one.
 -}
-isWorkInProgressForNegativeNumber : String -> Bool
-isWorkInProgressForNegativeNumber input =
+isWorkInProgressForNumber : String -> Bool
+isWorkInProgressForNumber input =
     "-" == input
 
 

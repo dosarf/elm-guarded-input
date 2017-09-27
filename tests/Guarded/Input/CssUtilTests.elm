@@ -19,7 +19,7 @@ testClassPurposes =
 
 validModel : Model Bool
 validModel =
-    Model_ { parsedInput = Valid_ True, lastError = Nothing }
+    Model_ { parsedInput = Valid_ ( True, "True" ), lastError = Nothing }
 
 
 workInProgressModel : Model Bool

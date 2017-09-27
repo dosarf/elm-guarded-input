@@ -10,7 +10,7 @@ type alias Info_ =
 
 
 type ParsedInput_ value
-    = Valid_ value
+    = Valid_ ( value, Input_ )
     | WorkInProgress_ Input_
     | Undefined_
 
@@ -29,7 +29,7 @@ type Model_ value
 
 
 type Msg_ value
-    = ValidMsg_ value
+    = ValidMsg_ ( value, Input_ )
     | InvalidMsg_ ( Input_, Info_ )
     | WorkInProgressMsg_ ( Input_, Info_ )
     | UndefinedMsg_
