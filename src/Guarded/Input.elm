@@ -1,23 +1,33 @@
 module Guarded.Input exposing (..)
 
 {-| This library provides support for guarded input (text) controls.
-A guarded input can be in one of three states:
+Guarded here means that the input (text) control is simply not allowed to
+contain any erroneous string. This is solved by constant normalization of
+the input control's content model and by feeding back the normalized model
+to the view of the input control.
+
+Potentially handy in educational software, where one does not want to confuse kids
+with explanations of badly formed input and such like.
+
+A guarded input can be in one of three _acceptable_ states:
 - undefined (empty input control),
 - work-in-progress (not convertible to a useful value, but could evolve
 potentially into one), and
 - valid (has actual value).
 
-Most notably it cannot be in an invalid state - any such erroneous change is
-rejected by the model, the previous, necessarily valid state is preserved.
+If the `Guarded.Input.update` function rejects a change of the input contents,
+the previously accepted model is preserved, and that model should be written back
+to the view - this way erroneous attempts will be just discarded.
 
-To reflect the model (which may reject the latest attempted input, preserving
-the last acceptable state) in the view, the view function needs to make sure
-to use the model for the value attribute for `Html.input`, see `inputString`.
-
-Potentially handy in educational software, where one does not want to confuse kids
-with explanations of badly formed input and such like. Of course, one can
-still get info on last erroneous input attempt, if needed, see `lastError`.
-
+## What's with work-in-progress?
+Erroneous content of input control is disallowed (actually, discarded immediately,
+as explained above). But there are contents that, while themselves are not yet
+convertible to a valid value, can evolve into such. For instance, a single
+minus character ("-") can evolve into a valid negative number. Such content
+must be allowed in the input control. The model in this case does not have
+a valid value to use (how could it?), but the work-in-progress string is
+stored nevertheless in the model, to be able to feed it back to the input
+control when generating the view. See `Guarded.Input.inputString`.
 
 # Types
 @docs Model, Msg
@@ -46,11 +56,9 @@ import Guarded.Input.InternalTypes exposing (..)
 -- Types
 
 
-{-| The model for holding data for a guarded input control. It holds parsed
-(verified and converted) value (if any), or the partial (work-in-progress)
-input text (if any). It also holds information about the error of the last input
-attempt (if any). Use utility functions `inputStringMaybe`,
-`inputString`, `toResult` or `lastError` to gain access to information held within.
+{-| The model for holding data for a guarded input control. Use utility
+functions `inputStringMaybe`, `inputString`, `toResult` or `lastError` to
+gain access to information held within.
 -}
 type alias Model value =
     Model_ value
@@ -93,7 +101,9 @@ initFor value =
 
 
 {-| Given a message tag with a payload of type `Msg value`, and parser function,
-it will return an `Html.Attribute`.
+it will return an `Html.Attribute` - an `Html.Events.onInput` with the
+event hanlder constructed out of the parser and the function converting
+`Guarded.Input.Msg` into your message type (effectively a message tag of yours).
 
         input
             [ Guarded.Input.parseOnInput YourMessageTag someParser
@@ -115,9 +125,10 @@ parseOnInput messageTag parser =
 
 
 {-| Updates the model for a guarded input control.
-- In case the Msg delivers an event about an erroneous input attempted, the
-  value and/or the currently accepted input text will be left unupdated, but
-  the info about the last error is preserved in the model.
+
+In case the Msg delivers an event about an erroneous input attempted, the
+value and/or the currently accepted input text will be left unupdated, but
+the info about the last error is preserved in the model.
 -}
 update : Msg v -> Model v -> ( Model v, Cmd (Msg v) )
 update message (Model_ model) =
@@ -177,10 +188,6 @@ inputStringMaybe (Model_ model) =
 work-in-progress (=not yet convertible to a value), or an actual valid string
 (= convertible to a value)) of a guarded input control.
 In case of undefined (empty), input control, returns an empty string.
-
-Most useful to feed the currently accepted input text from model (which may have
-rejected a previous erroneous input attempt) back to the value of the guarded
-input control:
 
     Html.input [ ..., value <| Guarded.Input.inputString myModel ] []
 
