@@ -1,10 +1,10 @@
 module Guarded.Input exposing (..)
 
 {-| This library provides support for guarded input (text) controls.
-Guarded here means that the input (text) control is simply not allowed to
-contain any erroneous string. This is solved by constant normalization of
-the input control's content model and by feeding back the normalized model
-to the view of the input control.
+Guarded here means that the input control is simply not allowed to
+contain any erroneous string. This is solved by normalization of
+the input control's content model on every input event and by feeding back
+the normalized model to the view of the input control.
 
 Potentially handy in educational software, where one does not want to confuse kids
 with explanations of badly formed input and such like.
@@ -16,18 +16,9 @@ potentially into one), and
 - valid (has actual value).
 
 If the `Guarded.Input.update` function rejects a change of the input contents,
-the previously accepted model is preserved, and that model should be written back
-to the view - this way erroneous attempts will be just discarded.
-
-## What's with work-in-progress?
-Erroneous content of input control is disallowed (actually, discarded immediately,
-as explained above). But there are contents that, while themselves are not yet
-convertible to a valid value, can evolve into such. For instance, a single
-minus character ("-") can evolve into a valid negative number. Such content
-must be allowed in the input control. The model in this case does not have
-a valid value to use (how could it?), but the work-in-progress string is
-stored nevertheless in the model, to be able to feed it back to the input
-control when generating the view. See `Guarded.Input.inputString`.
+the previous state - necessarily an _accepted_ one - is preserved, and that
+is the model to write back to the view, and this way erroneous
+attempts will be just discarded.
 
 # Types
 @docs Model, Msg
@@ -35,7 +26,7 @@ control when generating the view. See `Guarded.Input.inputString`.
 # Initializers
 @docs init, initFor, initWith
 
-# view
+# View
 @docs parseOnInput
 
 # Model update
@@ -50,63 +41,63 @@ control when generating the view. See `Guarded.Input.inputString`.
 
 import Html
 import Html.Events
-import Guarded.Input.InternalTypes exposing (..)
+import Guarded.Input.InternalTypes as InternalTypes exposing (Model_, Msg_(..), LastError_)
 
 
 -- Types
 
 
 {-| The model for holding data for a guarded input control. Use utility
-functions `inputStringMaybe`, `inputString`, `toResult` or `lastError` to
-gain access to information held within.
+functions `inputString`, `inputStringMaybe`, `toResult` or `lastError` to
+gain access to information held within. To manage CSS classes based on state,
+check out package 'Guarded.Input.CssUtil'.
 -}
 type alias Model value =
-    Model_ value
+    InternalTypes.Model_ value
 
 
 {-| The message type emitted by a guarded input control.
 -}
 type alias Msg value =
-    Msg_ value
+    InternalTypes.Msg_ value
 
 
 
 -- Initializers
 
 
-{-| Initializes the model with empty (undefined) input and no recorded error
-for last input attempt.
+{-| Initializes the model with empty (undefined) input.
 -}
 init : Model value
 init =
-    Model_
-        { parsedInput = Undefined_
+    InternalTypes.Model_
+        { parsedInput = InternalTypes.Undefined_
         , lastError = Nothing
         }
 
 
-{-| Initializes the model for an actual value. There is no recorded error for
-last input attempt.
+{-| Initializes the model for an actual value.
 -}
 initFor : value -> Model value
 initFor value =
-    Model_
-        { parsedInput = Valid_ ( value, toString value )
+    InternalTypes.Model_
+        { parsedInput = InternalTypes.Valid_ ( value, toString value )
         , lastError = Nothing
         }
 
 
-{-| Given a parser and an initial input string, yields an initial model. The model
+{-| Initializes the model from an input string, using a parser. The model
 is in the exact state as if user had typed (copy-pasted) the initial input
 string to a guarded input control.
 
-Obviously you want to use the very same parser function during model initialization
-that you use for the input control itself (see `parseOnInput`) for sake of
-consistency of your initialized model:
+For the sake of consistency of your initialized model, you want to use the very
+same parser during model initialization that you use for the input control:
+
+    type MyStuff = ...
 
     initialModel =
         { ...
-        , parsedStuff = Guarded.Input.initWith myStuffParser "initial stuff"
+        , parsedStuff = Guarded.Input.initWith myStuffParser "stuff"
         }
 
     ...
@@ -140,15 +131,13 @@ initWith parser initialInput =
 
 
 {-| Given a message tag with a payload of type `Msg value`, and parser function,
-it will return an `Html.Attribute` - an `Html.Events.onInput` with the
-event hanlder constructed out of the parser and the function converting
-`Guarded.Input.Msg` into your message type (effectively a message tag of yours).
+it will return an `Html.Attribute` that you can use with your input control.
 
-        input
-            [ Guarded.Input.parseOnInput YourMessageTag someParser
-            , value <| Guarded.Input.inputString someParsedValue
-            ]
-            []
+    input
+        [ Guarded.Input.parseOnInput YourMessageTag someParser
+        , value <| Guarded.Input.inputString someParsedModel
+        ]
+        []
 -}
 parseOnInput : (Msg value -> msg) -> (String -> Msg value) -> Html.Attribute msg
 parseOnInput messageTag parser =
@@ -164,39 +153,35 @@ parseOnInput messageTag parser =
 
 
 {-| Updates the model for a guarded input control.
-
-In case the Msg delivers an event about an erroneous input attempted, the
-value and/or the currently accepted input text will be left unupdated, but
-the info about the last error is preserved in the model.
 -}
 update : Msg v -> Model v -> ( Model v, Cmd (Msg v) )
-update message (Model_ model) =
+update message (InternalTypes.Model_ model) =
     case message of
-        ValidMsg_ value ->
-            ( Model_
-                { parsedInput = Valid_ value
+        InternalTypes.ValidMsg_ value ->
+            ( InternalTypes.Model_
+                { parsedInput = InternalTypes.Valid_ value
                 , lastError = Nothing
                 }
             , Cmd.none
             )
 
-        InvalidMsg_ ( input, info ) ->
-            ( Model_
+        InternalTypes.InvalidMsg_ ( input, info ) ->
+            ( InternalTypes.Model_
                 { model
-                    | lastError = Just <| LastError_ input info
+                    | lastError = Just <| InternalTypes.LastError_ input info
                 }
             , Cmd.none
             )
 
-        WorkInProgressMsg_ ( input, info ) ->
-            ( Model_
-                { parsedInput = WorkInProgress_ input
+        InternalTypes.WorkInProgressMsg_ ( input, info ) ->
+            ( InternalTypes.Model_
+                { parsedInput = InternalTypes.WorkInProgress_ input
                 , lastError = Nothing
                 }
             , Cmd.none
             )
 
-        UndefinedMsg_ ->
+        InternalTypes.UndefinedMsg_ ->
             ( init
             , Cmd.none
             )
@@ -206,27 +191,29 @@ update message (Model_ model) =
 -- Utility functions
 
 
-{-| Returns the input text, as accepted so far  of a guarded input control.
+{-| Returns the input text, as accepted so far (either work-in-progress or valid).
 In case of undefined (empty) content of the guarded input control,
 it returns `Nothing`.
 -}
 inputStringMaybe : Model value -> Maybe String
-inputStringMaybe (Model_ model) =
+inputStringMaybe (InternalTypes.Model_ model) =
     case model.parsedInput of
-        Valid_ ( value, input ) ->
+        InternalTypes.Valid_ ( value, input ) ->
             Just input
 
-        WorkInProgress_ acceptedInputSoFar ->
+        InternalTypes.WorkInProgress_ acceptedInputSoFar ->
             Just acceptedInputSoFar
 
-        Undefined_ ->
+        InternalTypes.Undefined_ ->
             Nothing
 
 
-{-| Returns the input text, as accepted so far (the input text could be
-work-in-progress (=not yet convertible to a value), or an actual valid string
-(= convertible to a value)) of a guarded input control.
-In case of undefined (empty), input control, returns an empty string.
+{-| Returns the input text, as accepted so far (either work-in-progress or valid).
+In case of undefined (empty) content of the guarded input control,
+it returns an empty string.
+
+You should feed back the model to the view. This way any erroneous input attempt
+is rejected, and the input control can contain only acceptable input strings:
 
     Html.input [ ..., value <| Guarded.Input.inputString myModel ] []
 
@@ -239,7 +226,7 @@ inputString model =
 {-| Returns the last error info, if any, from a guarded input control model.
 -}
 lastError : Model value -> Maybe String
-lastError (Model_ model) =
+lastError (InternalTypes.Model_ model) =
     case model.lastError of
         Just { input, info } ->
             Just info
@@ -249,18 +236,18 @@ lastError (Model_ model) =
 
 
 {-| Returns the value, if any, yielded by a guarded input control. In case
-of work-in-progress or undefined state, it return Err.
+of work-in-progress or undefined state, it returns Err.
 -}
 toResult : Model value -> Result String value
-toResult (Model_ model) =
+toResult (InternalTypes.Model_ model) =
     case model.parsedInput of
-        Valid_ ( value, input ) ->
+        InternalTypes.Valid_ ( value, input ) ->
             Ok value
 
-        WorkInProgress_ input ->
+        InternalTypes.WorkInProgress_ input ->
             "'" ++ input ++ "' is work in progress" |> Err
 
-        Undefined_ ->
+        InternalTypes.Undefined_ ->
             Err "Undefined"
 
 
@@ -292,7 +279,7 @@ rejects it
 parser : (String -> Result String value) -> (String -> Bool) -> String -> Msg value
 parser convert isWorkInProgress input =
     if input == "" then
-        UndefinedMsg_
+        InternalTypes.UndefinedMsg_
     else
         let
             conversionResult =
@@ -303,10 +290,10 @@ parser convert isWorkInProgress input =
         in
             case ( conversionResult, wip ) of
                 ( Ok v, _ ) ->
-                    ValidMsg_ ( v, input )
+                    InternalTypes.ValidMsg_ ( v, input )
 
                 ( Err error, True ) ->
-                    WorkInProgressMsg_ ( input, error )
+                    InternalTypes.WorkInProgressMsg_ ( input, error )
 
                 ( Err error, False ) ->
-                    InvalidMsg_ ( input, error )
+                    InternalTypes.InvalidMsg_ ( input, error )

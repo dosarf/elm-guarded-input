@@ -1,19 +1,20 @@
 module Guarded.Input.CssUtil exposing (Purpose(..), classListForInput, classListForWarning)
 
-{-| Support for applying different CSS classes to inputs (and any warnings) based
+{-| Support for applying different CSS classes to HTML elements based
 on guarded input control state.
 
 The model of a guarded input control actually tracks two things:
 - the state of the actual input
 - the info about the last erroneous input attempt, if any.
 
-You may want to define CSS class for the guarded input control itself using
+You could define CSS class for the guarded input control itself using
 `classListForInput`, which then has to deal with the following states of the
 input: valid, work-in-progress, undefined.
 
-You may also want to define CSS class for an warning box using
-`classListForWarning`, which then has to deal with the following states of
-the last error/input state: invalid, valid, work-in-progress, undefined.
+You could also define CSS class for an warning box using
+`classListForWarning`, if you want to show error info messages, which then has
+to deal with the following states of the last error/input state: invalid,
+valid, work-in-progress, undefined.
 
 # Types
 @docs Purpose
@@ -44,8 +45,8 @@ type Purpose
 -- CSS class utilities
 
 
-{-| Given a list of class+purpose pairs and a model, it returns a list of
-class+bool pairs to give directly to `Html.Attirbute.classList` for a guarded
+{-| Given a list of (class, purpose) pairs and a model, it returns a list of
+(class, bool) pairs to give directly to `Html.Attirbute.classList` for a guarded
 input control. It requires a class for 3 eventualities: valid, work-in-progress
 and undefined state.
 
@@ -76,8 +77,8 @@ classListForInput =
     classList selectClassForInput
 
 
-{-| Given a list of class+purpose pairs and a model, it returns a list of
-class+bool pairs to give directly to `Html.Attirbute.classList` for a warning
+{-| Given a list of (class, purpose) pairs and a model, it returns a list of
+(class, bool) pairs to give directly to `Html.Attirbute.classList` for a warning
 box for a guarded input control. It requires a class for 4 eventualities:
 valid, invalid, work-in-progress and undefined state.
 
@@ -105,6 +106,10 @@ valid, invalid, work-in-progress and undefined state.
 classListForWarning : List ( String, Purpose ) -> Model value -> List ( String, Bool )
 classListForWarning =
     classList selectClassForWarning
+
+
+
+-- Implementation
 
 
 classList : (Model value -> Purpose -> Bool) -> List ( String, Purpose ) -> Model value -> List ( String, Bool )

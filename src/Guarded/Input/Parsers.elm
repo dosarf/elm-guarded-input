@@ -17,7 +17,6 @@ that may come useful when constructing your own parsers.
 -}
 
 import Guarded.Util.Integer exposing (..)
-import Guarded.Input.InternalTypes exposing (..)
 import Guarded.Input exposing (..)
 
 
@@ -38,16 +37,14 @@ nonNegativeIntParser =
     parser (intConverter >> Result.andThen nonNegativeNumberChecker) nothingIsWorkInProgress
 
 
-{-| Parses floats, including negative ones. No scientific notation is supported,
-hence simple.
+{-| Parses floats, including negative ones. No scientific notation is supported.
 -}
 simpleFloatParser : String -> Msg Float
 simpleFloatParser =
     parser String.toFloat isWorkInProgressForNumber
 
 
-{-| Parses non-negative floats. No scientific notation is supported,
-hence simple.
+{-| Parses non-negative floats. No scientific notation is supported.
 -}
 simpleNonNegativeFloatParser : String -> Msg Float
 simpleNonNegativeFloatParser =
@@ -75,7 +72,8 @@ isWorkInProgressForNumber input =
 
 
 {-| Matches no input as a work-in-progress input. Useful in cases when the
-set of work-in-progress is empty, like when matching positive integers.
+set of work-in-progress is empty (i.e. anything rejected by the convert function
+is invalid).
 -}
 nothingIsWorkInProgress : String -> Bool
 nothingIsWorkInProgress input =
@@ -86,11 +84,11 @@ nothingIsWorkInProgress input =
 -- Converters
 
 
-{-| A String -> String.toInt will return a buggy `NaN` for a "-" (single
-minus character). This workaround function will return a proper Err for it.
+{-| `String.toInt` will return a buggy `NaN` for a "-" (single
+minus character). Use this workaround function instead.
 
-    intConverter "123" -- 123
-    intConverter "-123" -- -123
+    intConverter "123" -- yields 123
+    intConverter "-123" -- yields -123
     intConverter "a" -- Err "could not convert string 'a' to an Int"
     intConverter "-" -- Err "NaN"
 -}
