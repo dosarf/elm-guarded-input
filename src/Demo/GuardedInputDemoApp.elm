@@ -1,10 +1,11 @@
-module Demo.GuardedInputDemoApp exposing (..)
+module Demo.GuardedInputDemoApp exposing (Model, Msg(..), boolConverter, boolParser, demoClassListForInput, demoClassListForWarning, demoClassPurposes, demoInput, demoTable, demoTableBody, demoTableHead, demoTableInputRow, initialModel, isWorkInProgressForBool, main, subscriptions, update, view)
 
+import Browser
 import Guarded.Input
-import Guarded.Input.Parsers
 import Guarded.Input.CssUtil
-import Html exposing (Attribute, Html, div, input, text, table, caption, span, thead, tbody, tr, td)
-import Html.Attributes exposing (class, classList, value, style)
+import Guarded.Input.Parsers
+import Html exposing (Attribute, Html, caption, div, input, span, table, tbody, td, text, thead, tr)
+import Html.Attributes exposing (class, classList, style, value)
 import Html.Lazy exposing (lazy3)
 
 
@@ -20,11 +21,11 @@ type alias Model =
 
 initialModel : Model
 initialModel =
-    { parsedInt = Guarded.Input.initFor -42
-    , parsedNonNegativeInt = Guarded.Input.initFor 42
+    { parsedInt = Guarded.Input.initFor -42 "-42"
+    , parsedNonNegativeInt = Guarded.Input.initFor 42 "-42"
     , parsedDigit = Guarded.Input.init
     , parsedFloat = Guarded.Input.init
-    , parsedNonNegativeFloat = Guarded.Input.initFor 3.1415
+    , parsedNonNegativeFloat = Guarded.Input.initFor 3.1415 "3.1415"
     , parsedBool = Guarded.Input.initWith boolParser "ye"
     }
 
@@ -38,7 +39,7 @@ type Msg
     | BoolChanged (Guarded.Input.Msg Bool)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update message model =
     case message of
         AnyIntChanged msg ->
@@ -46,66 +47,54 @@ update message model =
                 ( newParsed, subCmd ) =
                     Guarded.Input.update msg model.parsedInt
             in
-                ( { model
-                    | parsedInt = newParsed
-                  }
-                , Cmd.map AnyIntChanged subCmd
-                )
+            { model
+                | parsedInt = newParsed
+            }
 
         NonNegativeIntChanged msg ->
             let
                 ( newParsed, subCmd ) =
                     Guarded.Input.update msg model.parsedNonNegativeInt
             in
-                ( { model
-                    | parsedNonNegativeInt = newParsed
-                  }
-                , Cmd.map NonNegativeIntChanged subCmd
-                )
+            { model
+                | parsedNonNegativeInt = newParsed
+            }
 
         DigitChanged msg ->
             let
                 ( newParsed, subCmd ) =
                     Guarded.Input.update msg model.parsedDigit
             in
-                ( { model
-                    | parsedDigit = newParsed
-                  }
-                , Cmd.map DigitChanged subCmd
-                )
+            { model
+                | parsedDigit = newParsed
+            }
 
         FloatChanged msg ->
             let
                 ( newParsed, subCmd ) =
                     Guarded.Input.update msg model.parsedFloat
             in
-                ( { model
-                    | parsedFloat = newParsed
-                  }
-                , Cmd.map FloatChanged subCmd
-                )
+            { model
+                | parsedFloat = newParsed
+            }
 
         NonNegativeFloatChanged msg ->
             let
                 ( newParsed, subCmd ) =
                     Guarded.Input.update msg model.parsedNonNegativeFloat
             in
-                ( { model
-                    | parsedNonNegativeFloat = newParsed
-                  }
-                , Cmd.map NonNegativeFloatChanged subCmd
-                )
+            { model
+                | parsedNonNegativeFloat = newParsed
+            }
 
         BoolChanged msg ->
             let
                 ( newParsed, subCmd ) =
                     Guarded.Input.update msg model.parsedBool
             in
-                ( { model
-                    | parsedBool = newParsed
-                  }
-                , Cmd.map BoolChanged subCmd
-                )
+            { model
+                | parsedBool = newParsed
+            }
 
 
 view : Model -> Html Msg
@@ -120,12 +109,7 @@ subscriptions model =
 
 
 main =
-    Html.program
-        { init = ( initialModel, Cmd.none )
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
+    Browser.sandbox { init = initialModel, update = update, view = view }
 
 
 demoTable : Model -> Html Msg
@@ -242,6 +226,7 @@ isWorkInProgressForBool : String -> Bool
 isWorkInProgressForBool input =
     if String.startsWith input "yes" || String.startsWith input "no" then
         True
+
     else
         False
 

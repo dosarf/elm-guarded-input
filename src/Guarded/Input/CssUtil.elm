@@ -1,11 +1,15 @@
-module Guarded.Input.CssUtil exposing (Purpose(..), classListForInput, classListForWarning)
+module Guarded.Input.CssUtil exposing
+    ( Purpose(..)
+    , classListForInput, classListForWarning
+    )
 
 {-| Support for applying different CSS classes to HTML elements based
 on guarded input control state.
 
 The model of a guarded input control actually tracks two things:
-- the state of the actual input
-- the info about the last erroneous input attempt, if any.
+
+  - the state of the actual input
+  - the info about the last erroneous input attempt, if any.
 
 You could define CSS class for the guarded input control itself using
 `classListForInput`, which then has to deal with the following states of the
@@ -16,16 +20,21 @@ You could also define CSS class for an warning box using
 to deal with the following states of the last error/input state: invalid,
 valid, work-in-progress, undefined.
 
+
 # Types
+
 @docs Purpose
 
 
 # CSS class utilities
+
 @docs classListForInput, classListForWarning
+
 -}
 
-import Guarded.Input.InternalTypes exposing (ParsedInput_(..), Model_(..))
 import Guarded.Input exposing (Model)
+import Guarded.Input.InternalTypes exposing (Model_(..), ParsedInput_(..))
+
 
 
 -- Types
@@ -71,6 +80,7 @@ and undefined state.
         , ( "guarded-input-work-in-progress", Guarded.Input.CssUtil.WorkInProgress )
         , ( "guarded-input-undefined", Guarded.Input.CssUtil.Undefined )
         ]
+
 -}
 classListForInput : List ( String, Purpose ) -> Model value -> List ( String, Bool )
 classListForInput =
@@ -102,6 +112,7 @@ valid, invalid, work-in-progress and undefined state.
         , ( "guarded-input-work-in-progress", Guarded.Input.CssUtil.WorkInProgress )
         , ( "guarded-input-undefined", Guarded.Input.CssUtil.Undefined )
         ]
+
 -}
 classListForWarning : List ( String, Purpose ) -> Model value -> List ( String, Bool )
 classListForWarning =

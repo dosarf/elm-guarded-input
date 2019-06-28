@@ -1,11 +1,11 @@
 module Guarded.InputTests exposing (testSuite)
 
-import Test exposing (..)
 import Expect
 import Fuzz exposing (int)
-import String
-import Guarded.Input.InternalTypes exposing (..)
 import Guarded.Input exposing (..)
+import Guarded.Input.InternalTypes exposing (..)
+import String
+import Test exposing (..)
 
 
 testSuite : Test
@@ -32,7 +32,7 @@ validMsg =
 
 workInProgressModel : Model Bool
 workInProgressModel =
-    Model_ { parsedInput = (WorkInProgress_ "Tru"), lastError = Nothing }
+    Model_ { parsedInput = WorkInProgress_ "Tru", lastError = Nothing }
 
 
 workInProgressMsg : Msg Bool
@@ -115,8 +115,8 @@ modelStateTestSuite =
         , describe "initFor tests"
             [ fuzz int "Model initialized for a given value has that value, and there is no last error" <|
                 \x ->
-                    Model_ { parsedInput = Valid_ ( x, toString x ), lastError = Nothing }
-                        |> Expect.equal (initFor x)
+                    Model_ { parsedInput = Valid_ ( x, String.fromInt x ), lastError = Nothing }
+                        |> Expect.equal (initFor x (String.fromInt x))
             ]
         , describe "initWith tests"
             [ test "Valid initial input string yields valid initial model without error" <|
@@ -257,6 +257,7 @@ utilityFunctionsTest =
                     ""
                         |> Expect.equal (inputString undefinedNoLastError)
             ]
-          -- TODO test lastError
-          -- TODO test toResult
+
+        -- TODO test lastError
+        -- TODO test toResult
         ]

@@ -1,4 +1,11 @@
-module Guarded.Input exposing (..)
+module Guarded.Input exposing
+    ( Model, Msg
+    , init, initFor, initWith
+    , parseOnInput
+    , update
+    , inputString, inputStringMaybe, lastError, toResult
+    , parser
+    )
 
 {-| This library provides support for guarded input (text) controls.
 Guarded here means that the input control is simply not allowed to
@@ -10,38 +17,53 @@ Potentially handy in educational software, where one does not want to confuse ki
 with explanations of badly formed input and such like.
 
 A guarded input can be in one of three _acceptable_ states:
-- undefined (empty input control),
-- work-in-progress (not convertible to a useful value, but could evolve
-potentially into one), and
-- valid (has actual value).
+
+  - undefined (empty input control),
+  - work-in-progress (not convertible to a useful value, but could evolve
+    potentially into one), and
+  - valid (has actual value).
 
 If the `Guarded.Input.update` function rejects a change of the input contents,
 the previous state - necessarily an _accepted_ one - is preserved, and that
 is the model to write back to the view, and this way erroneous
 attempts will be just discarded.
 
+
 # Types
+
 @docs Model, Msg
 
+
 # Initializers
+
 @docs init, initFor, initWith
 
+
 # View
+
 @docs parseOnInput
 
+
 # Model update
+
 @docs update
 
+
 # Utility functions
+
 @docs inputString, inputStringMaybe, lastError, toResult
 
+
 # Parsing gadgetry
+
 @docs parser
+
 -}
 
+import Guarded.Input.InternalTypes as InternalTypes exposing (LastError_, Model_, Msg_(..))
 import Html
 import Html.Events
-import Guarded.Input.InternalTypes as InternalTypes exposing (Model_, Msg_(..), LastError_)
+
 
 
 -- Types
@@ -76,12 +98,13 @@ init =
         }
 
 
-{-| Initializes the model for an actual value.
+{-| Initializes the model for an actual value and its string
+representation.
 -}
-initFor : value -> Model value
-initFor value =
+initFor : value -> String -> Model value
+initFor value stringRepresentation =
     InternalTypes.Model_
-        { parsedInput = InternalTypes.Valid_ ( value, toString value )
+        { parsedInput = InternalTypes.Valid_ ( value, stringRepresentation )
         , lastError = Nothing
         }
 
@@ -113,17 +136,18 @@ same parser during model initialization that you use for the input control:
     myStuffParser : String -> Guarded.Input.Msg MyStuff
     myStuffParser =
         ...
+
 -}
 initWith : (String -> Msg value) -> String -> Model value
-initWith parser initialInput =
+initWith parserArg initialInput =
     let
         msg =
-            parser initialInput
+            parserArg initialInput
 
         ( firstModel, _ ) =
             update msg init
     in
-        firstModel
+    firstModel
 
 
 
@@ -138,14 +162,15 @@ it will return an `Html.Attribute` that you can use with your input control.
         , value <| Guarded.Input.inputString someParsedModel
         ]
         []
+
 -}
 parseOnInput : (Msg value -> msg) -> (String -> Msg value) -> Html.Attribute msg
-parseOnInput messageTag parser =
+parseOnInput messageTag parserArg =
     let
         onInputHandler =
-            parser >> messageTag
+            parserArg >> messageTag
     in
-        Html.Events.onInput onInputHandler
+    Html.Events.onInput onInputHandler
 
 
 
@@ -275,11 +300,13 @@ accepted as work in progress.
 A non-empty input string converted successfully to a value by `convert` is
 valid. In this case it does not matter whether `isWorkInProgress` accepts it or
 rejects it
+
 -}
 parser : (String -> Result String value) -> (String -> Bool) -> String -> Msg value
 parser convert isWorkInProgress input =
     if input == "" then
         InternalTypes.UndefinedMsg_
+
     else
         let
             conversionResult =
@@ -288,12 +315,12 @@ parser convert isWorkInProgress input =
             wip =
                 isWorkInProgress input
         in
-            case ( conversionResult, wip ) of
-                ( Ok v, _ ) ->
-                    InternalTypes.ValidMsg_ ( v, input )
+        case ( conversionResult, wip ) of
+            ( Ok v, _ ) ->
+                InternalTypes.ValidMsg_ ( v, input )
 
-                ( Err error, True ) ->
-                    InternalTypes.WorkInProgressMsg_ ( input, error )
+            ( Err error, True ) ->
+                InternalTypes.WorkInProgressMsg_ ( input, error )
 
-                ( Err error, False ) ->
-                    InternalTypes.InvalidMsg_ ( input, error )
+            ( Err error, False ) ->
+                InternalTypes.InvalidMsg_ ( input, error )

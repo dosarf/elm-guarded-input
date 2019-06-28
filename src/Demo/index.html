@@ -115,7 +115,7 @@ table {
     <script>
       function init() {
         var elmAppNode = document.getElementById('elm-app');
-        var app = Elm.Demo.GuardedInputDemoApp.embed(elmAppNode);
+        var app = Elm.Demo.GuardedInputDemoApp.init({ node: elmAppNode });
       }
     </script>
   </head>
